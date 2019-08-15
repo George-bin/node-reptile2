@@ -5,7 +5,7 @@ const app = require('./app');
 
 // 启动服务 start
 let httpServer = http.createServer(app);
-httpServer.listen(80);
+httpServer.listen(3000);
 httpServer.on('error', function() {
 	console.log('服务启动失败!')
 });
@@ -16,15 +16,15 @@ httpServer.on('listening', function() {
 
 
 // https服务start
-// const httpsOption = {
-// 	key: fs.readFileSync('./ssl/gengshaobin.top.key'), //证书文件的存放目录
-// 	cert: fs.readFileSync('./ssl/gengshaobin.top.pem')
-// };
-
 const httpsOption = {
-	key: fs.readFileSync('./local-ssl/private.key'), //证书文件的存放目录
-	cert: fs.readFileSync('./local-ssl/mydomain.crt')
+	key: fs.readFileSync('./ssl/gengshaobin.top.key'), //证书文件的存放目录
+	cert: fs.readFileSync('./ssl/gengshaobin.top.pem')
 };
+
+// const httpsOption = {
+// 	key: fs.readFileSync('./local-ssl/private.key'), //证书文件的存放目录
+// 	cert: fs.readFileSync('./local-ssl/mydomain.crt')
+// };
 let httpsServer = https.createServer(httpsOption, app)
 httpsServer.listen(7777);
 httpsServer.on('error', function() {

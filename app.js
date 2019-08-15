@@ -2,6 +2,15 @@ const http = require('http');
 const https = require('https');
 const express = require('express');
 const fs = require('fs');
+const bodyParser = require('body-parser');
+const multer = require('multer');
+const storage = multer.diskStorage({
+	// destination: 'D:\\public\\uploads\\'+ new Date().getFullYear() + (new Date().getMonth()+1) + new Date().getDate()
+	destination: 'D:\\public\\uploads\\images\\'
+});
+// 设置保存上传文件路径
+const upload = multer({storage})
+
 // cheerio相当于node版的jQuery，用过jQuery的同学会非常容易上手。它主要是用来获取抓取到的页面元素和其中的数据信息;
 const cheerio = require('cheerio');
 // 模块进行转码，中文显示正常后开始解析源码；
@@ -29,6 +38,21 @@ mongoose.connection.on('disconnected', function() {
 // 数据库 end
 
 const app = express();
+app.use(bodyParser.json())
+app.use(upload.any())
+
+let cors = `http://localhost:8080`
+app.all('*', (req, res, next) => {
+	let ol = cors.split(',')
+	if (ol.includes(req.headers.origin) >= 0) {
+		res.header("Access-Control-Allow-Origin", req.headers.origin);
+		res.header('Access-Control-Allow-Methods', '*');
+		res.header("Access-Control-Allow-Headers","Content-Type");
+		res.header("Content-Type", "application/json;charset=utf-8");
+		res.header("Access-Control-Allow-Credentials", true);
+	}
+	next();
+});
 
 const model = require("./router/fiction/model");
 const Catalog = model.Catalog;
@@ -36,6 +60,7 @@ const SectionContent = model.SectionContent;
 
 // 小说路由
 app.use('/api/book/', fictionRouter)
+app.use('/api/book/public/uploads/*/*', express.static('public'))
 
 let url = 'http://www.quanshuwang.com/book/91/91557';
 // getCatalog(url);
