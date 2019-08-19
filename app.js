@@ -1,12 +1,15 @@
 const http = require('http');
 const https = require('https');
+const path = require('path');
 const express = require('express');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+const serverConfig = require('./config');
 const multer = require('multer');
 const storage = multer.diskStorage({
 	// destination: 'D:\\public\\uploads\\'+ new Date().getFullYear() + (new Date().getMonth()+1) + new Date().getDate()
-	destination: 'D:\\public\\uploads\\images\\'
+	destination: path.join(__dirname, 'public')
 });
 // 设置保存上传文件路径
 const upload = multer({storage})
@@ -41,12 +44,12 @@ const app = express();
 app.use(bodyParser.json())
 app.use(upload.any())
 
-let cors = `http://localhost:8080`
+let cors = serverConfig.cors;
 app.all('*', (req, res, next) => {
 	let ol = cors.split(',')
 	if (ol.includes(req.headers.origin) >= 0) {
 		res.header("Access-Control-Allow-Origin", req.headers.origin);
-		res.header('Access-Control-Allow-Methods', '*');
+		res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
 		res.header("Access-Control-Allow-Headers","Content-Type");
 		res.header("Content-Type", "application/json;charset=utf-8");
 		res.header("Access-Control-Allow-Credentials", true);
@@ -54,20 +57,41 @@ app.all('*', (req, res, next) => {
 	next();
 });
 
+// 使用session中间件
+app.use(session({
+	secret: 'this is string key',   // 可以随便写。 一个 String 类型的字符串，作为服务器端生成 session 的签名
+
+
+	name: 'session_id',/*保存在本地cookie的一个名字 默认connect.sid  可以不设置*/
+	resave: false,   /*强制保存 session 即使它并没有变化,。默认为 true。建议设置成 false。*/
+	saveUninitialized: true,   //强制将未初始化的 session 存储。  默认值是true  建议设置成true
+	cookie: {
+		maxAge: 5000    /*过期时间*/
+
+	},   /*secure https这样的情况才可以访问cookie*/
+	//设置过期时间比如是30分钟，只要游览页面，30分钟没有操作的话在过期
+	rolling: true //在每次请求时强行设置 cookie，这将重置 cookie 过期时间（默认：false）
+}))
+
 const model = require("./router/fiction/model");
 const Catalog = model.Catalog;
 const SectionContent = model.SectionContent;
 
 // 小说路由
 app.use('/api/book/', fictionRouter)
-app.use('/api/book/public/uploads/*/*', express.static('public'))
+app.use(express.static(path.join(__dirname, 'public')))
 
-let url = 'http://www.quanshuwang.com/book/91/91557';
-// getCatalog(url);
+// let url = 'http://www.quanshuwang.com/book/0/329';
+// getCatalog({
+// 	url,
+// 	bookId: 44,
+// 	bookName: '斗破苍穹',
+// 	author: '天蚕土豆'
+// });
 // 获取小说目录
 let catalog = [];
 
-function getCatalog(url) {
+function getCatalog({url, bookId, bookName, author}) {
 	http.get(url, function(res) {
 		let chunks = [];
 		res.on('data', function(chunk) {
@@ -84,10 +108,12 @@ function getCatalog(url) {
 			});
 			$('.chapterNum li a').each((idx, ele) => {
 				let catalog = new Catalog({
-					bookId: 41,
+					bookId: bookId,
+					bookName: bookName,
+					author: author,
 					title: $(ele).text(),
 					url: $(ele).attr('href'),
-					sortId: idx.toString().padStart(6, '0')
+					sectionId: idx.toString().padStart(6, '0')
 				});
 				catalog.save(function(err, data) {
 					if (err) return console.log(err);
@@ -111,7 +137,9 @@ function getSectionContent({
 	url,
 	bookId,
 	title,
-	sectionId
+	sectionId,
+	bookName,
+	author
 }) {
 	let sectionInfo = '';
 	http.get(url, function(res) {
@@ -131,6 +159,8 @@ function getSectionContent({
 			sectionInfo = $('#content').text();
 			let sectionContent = new SectionContent({
 				bookId: bookId,
+				bookName: bookName, // 书名
+				author: author, // 作者
 				title: title,
 				sectionId: sectionId,
 				content: sectionInfo
@@ -161,15 +191,60 @@ function saveDatabase(url) {
 						url: item.url,
 						bookId: item.bookId,
 						title: item.title,
-						sectionId: item.sortId
+						sectionId: item.sectionId,
+						bookName: item.bookName, // 书名
+						author: item.author // 作者
 					})
-				}, 1000 * index)
+				}, 50 * index)
 			})
 		})
 	})
 }
 
-// saveDatabase('http://localhost:3000/api/book/catalog/41')
+// 完善章节（避免漏掉）
+function aviodMissingSection (url) {
+	http.get(url, function(res) {
+		let chunks = '';
+		res.on('data', function(chunk) {
+			console.log('数据进来啦')
+			chunks += chunk;
+		});
+		res.on('end', function() {
+			console.log('数据接收完成')
+			let catalogs = JSON.parse(chunks).catalogData;
+
+			catalogs.forEach((item, index) => {
+				console.log(item.bookName)
+				setTimeout(() => {
+					http.get(`http://localhost:3000/api/book/content/${item.bookId}/${item.sectionId}`, function (res2) {
+						let data = '';
+						res2.on('data', function(chunk) {
+							// console.log('数据进来啦')
+							data += chunk;
+						});
+						res2.on('end', function () {
+							console.log(data)
+							data = JSON.parse(data)
+							if (data.errcode !== 0) {
+								getSectionContent({
+									url: item.url,
+									bookId: item.bookId,
+									title: item.title,
+									sectionId: item.sectionId,
+									bookName: item.bookName, // 书名
+									author: item.author, // 作者
+								})
+							}
+						})
+					})
+				}, 50 * index)
+			})
+		})
+	})
+}
+// aviodMissingSection('http://localhost:3000/api/book/catalog/44')
+
+// saveDatabase('http://localhost:3000/api/book/catalog/44')
 
 
 app.get('/', async function(req, res, next) {

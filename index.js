@@ -2,10 +2,11 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const app = require('./app');
+const serverConfig = require('./config');
 
 // 启动服务 start
 let httpServer = http.createServer(app);
-httpServer.listen(3000);
+httpServer.listen(serverConfig.port);
 httpServer.on('error', function() {
 	console.log('服务启动失败!')
 });
