@@ -99,7 +99,7 @@ router.get('/catalog/:bookId', function(req, res, next) {
 			res.send({
 				errcode: 0,
 				message: '获取目录成功!',
-				catalogData
+				catalogData: catalogData.slice(0, 10)
 			});
 		} else {
 			res.send({

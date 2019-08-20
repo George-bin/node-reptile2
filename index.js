@@ -27,11 +27,11 @@ const httpsOption = {
 // 	cert: fs.readFileSync('./local-ssl/mydomain.crt')
 // };
 let httpsServer = https.createServer(httpsOption, app)
-httpsServer.listen(7777);
+httpsServer.listen(443);
 httpsServer.on('error', function() {
 	console.log('https服务启动失败!')
 });
 httpsServer.on('listening', function() {
-	console.log('https服务启动，端口7777!');
+	console.log('https服务启动，端口443!');
 });
 // https服务end
