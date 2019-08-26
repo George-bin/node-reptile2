@@ -11,12 +11,14 @@ const model = require("./model");
 const Catalog = model.Catalog;
 const SectionContent = model.SectionContent;
 const Book = model.Book;
+const Classify = model.Classify;
 
 // 状态码（errcode）
 // 999：操作数据库失败
 // 998：抱歉，本站尚未收录此书!
 // 997：该章节不存在
 // 996：上传文件失败
+// 995：查询参数错误 => get
 // 0：正常访问
 
 // 获取小说列表
@@ -62,6 +64,11 @@ router.get('/list', function(req, res, next) {
 	})
 })
 
+// 获取小说列表(classifyId)
+router.get('/listByClassifyId', function (req, res, next) {
+
+})
+
 // 小程序-获取openid
 router.post('/getOpenid', function (req, res, next) {
 	// appid: wx87fc79ea9b023224
@@ -83,11 +90,47 @@ router.post('/getOpenid', function (req, res, next) {
 	})
 });
 
-// 获取小说目录
+// 获取小说目录 query => page: 页数 limit: 每次获取的数量
 router.get('/catalog/:bookId', function(req, res, next) {
-	// console.log(req.params.bookId)
+	console.log(req.params)
+	console.log(req.query)
+	let { bookId } = req.params
+	let { page, limit } = req.query
+	// 爬取书籍
+	if (page === 'all') {
+		Catalog.find({
+			bookId: bookId
+		}, function(err, catalogData) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '查询数据库失败!'
+				});
+			}
+			if (catalogData.length) {
+				res.send({
+					errcode: 0,
+					message: '获取目录成功!',
+					catalogData: catalogData
+				});
+			} else {
+				res.send({
+					errcode: 998,
+					message: '抱歉，本站尚未收录此书!'
+				});
+			}
+		})
+		return
+	}
+	// 查询参数不存在
+	if (!page || !limit) {
+		return res.send({
+			errcode: 995,
+			message: '查询参数错误!'
+		});
+	}
 	Catalog.find({
-		bookId: req.params.bookId
+		bookId: bookId
 	}, function(err, catalogData) {
 		if (err) {
 			return res.send({
@@ -96,10 +139,12 @@ router.get('/catalog/:bookId', function(req, res, next) {
 			});
 		}
 		if (catalogData.length) {
+			page = parseInt(page)
+			limit = parseInt(limit)
 			res.send({
 				errcode: 0,
 				message: '获取目录成功!',
-				catalogData: catalogData.slice(0, 10)
+				catalogData: catalogData.slice(page*limit, page*limit+limit)
 			});
 		} else {
 			res.send({
@@ -219,7 +264,7 @@ router.post('/registerBook', function (req, res, next) {
 			return res.send({
 				errCode: 999,
 				message: '写入数据库失败!'
-			})
+			});
 		}
 		res.send({
 			errCode: 0,
@@ -270,6 +315,99 @@ router.put('/updateBookInfo', function (req, res, next) {
 			message: '更新数据成功!'
 		})
 	})
+})
+
+// 删除小说
+router.delete('/delete/:bookId', function (req, res, next) {
+	let { params } = req;
+	console.log(params);
+	Book.deleteOne({bookId: params.bookId}, function (err, book) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '删除小说失败!'
+			});
+		}
+		Catalog.deleteMany({bookId: params.bookId}, function (err, catalog) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '删除小说目录失败!'
+				});
+			}
+			SectionContent.deleteMany({bookId: params.bookId}, function (err, content) {
+				if (err) {
+					return res.send({
+						errcode: 999,
+						message: '删除小说目录失败!'
+					});
+				}
+				res.send({
+					errcode: 0,
+					message: '删除成功!'
+				});
+			})
+		})
+	})
+})
+
+// 获取分类
+router.get('/classifyList', function (req, res, next) {
+	Classify.find({}, function (err, classifyList) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '获取分类失败!'
+			})
+		}
+		res.send({
+			errcode: 0,
+			message: '获取分类成功!',
+			classifyList
+		})
+	})
+})
+
+// 新增分类
+router.post('/registerClassify', function (req, res, next) {
+  let { body } = req;
+  let classify = new Classify({
+    ...body
+  })
+  classify.save((err, classify) => {
+    if (err) {
+      return res.send({
+        errCode: 999,
+        message: '写入数据库失败!'
+      });
+    }
+    res.send({
+      errCode: 0,
+      message: '新增分类成功!'
+    });
+  })
+})
+
+// 更新分类
+router.put('/updateClassify', function (req, res, next) {
+  let { body } = req
+  Classify.update({ _id: body._id }, {
+    classifyId: body.classifyId,
+    classifyName: body.classifyName,
+    classifyBookCount: body.classifyBookCount
+  }, function (err, res) {
+    if (err) {
+      return res.send({
+        errcode: 999,
+        message: '更新分类失败!'
+      })
+    }
+  })
+
+  res.send({
+    errcode: 0,
+    message: '更新分类成功!'
+  })
 })
 
 module.exports = router;

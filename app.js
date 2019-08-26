@@ -14,6 +14,10 @@ const storage = multer.diskStorage({
 // 设置保存上传文件路径
 const upload = multer({storage})
 
+const Nightmare = require('nightmare');          // 自动化测试包，处理动态页面
+const nightmare = Nightmare({ show: true });     // show:true  显示内置模拟浏览器
+
+
 // cheerio相当于node版的jQuery，用过jQuery的同学会非常容易上手。它主要是用来获取抓取到的页面元素和其中的数据信息;
 const cheerio = require('cheerio');
 // 模块进行转码，中文显示正常后开始解析源码；
@@ -81,18 +85,18 @@ const SectionContent = model.SectionContent;
 app.use('/api/book/', fictionRouter)
 app.use(express.static(path.join(__dirname, 'public')))
 
-// let url = 'http://www.quanshuwang.com/book/0/329';
+let url = 'https://m.23us23us.com/68/68397/';
 // getCatalog({
 // 	url,
-// 	bookId: 44,
-// 	bookName: '斗破苍穹',
-// 	author: '天蚕土豆'
+// 	bookId: 30,
+// 	bookName: '林青的幸福生活',
+// 	author: '春天'
 // });
 // 获取小说目录
 let catalog = [];
 
 function getCatalog({url, bookId, bookName, author}) {
-	http.get(url, function(res) {
+	https.get(url, function(res) {
 		let chunks = [];
 		res.on('data', function(chunk) {
 			console.log('数据进来啦!');
@@ -101,12 +105,45 @@ function getCatalog({url, bookId, bookName, author}) {
 		res.on('end', function() {
 			console.log('数据接收完成!')
 			// 转码操作
-			var html = iconv.decode(Buffer.concat(chunks), 'gb2312');
+			// var html = iconv.decode(Buffer.concat(chunks), 'gb2312');
+			var html = iconv.decode(Buffer.concat(chunks), 'utf-8');
 			var $ = cheerio.load(html, {
 				// 如果设置为true，将对文档中的实体进行解码。默认为false。
 				decodeEntities: false
 			});
-			$('.chapterNum li a').each((idx, ele) => {
+			// $('.chapterNum li a').each((idx, ele) => {
+			// 	let catalog = new Catalog({
+			// 		bookId: bookId,
+			// 		bookName: bookName,
+			// 		author: author,
+			// 		title: $(ele).text(),
+			// 		url: $(ele).attr('href'),
+			// 		sectionId: idx.toString().padStart(6, '0')
+			// 	});
+			// 	catalog.save(function(err, data) {
+			// 		if (err) return console.log(err);
+			// 	})
+			// });
+
+			// 全本小说
+			// $('#main .chapterlist dd:nth-child(n+11) a').each((idx, ele) => {
+			// 	console.log('啦啦啦')
+			// 	let catalog = new Catalog({
+			// 		bookId: bookId,
+			// 		bookName: bookName,
+			// 		author: author,
+			// 		title: $(ele).text(),
+			// 		url: 'https://www.quanben.net'+$(ele).attr('href'),
+			// 		sectionId: idx.toString().padStart(6, '0')
+			// 	});
+			// 	catalog.save(function(err, data) {
+			// 		if (err) return console.log(err);
+			// 	})
+			// });
+
+			// 66小说网
+			$('.chapters li:nth-child(n+2) a').each((idx, ele) => {
+				console.log('啦啦啦')
 				let catalog = new Catalog({
 					bookId: bookId,
 					bookName: bookName,
@@ -118,13 +155,6 @@ function getCatalog({url, bookId, bookName, author}) {
 				catalog.save(function(err, data) {
 					if (err) return console.log(err);
 				})
-				// console.log(idx)
-				// catalog.push({
-				// 	bookId: 41,
-				// 	title: $(ele).text(),
-				// 	url: $(ele).attr('href'),
-				// 	sortId: idx.toString().padStart(6, '0')
-				// });
 			});
 		});
 	}).on('error', function() {
@@ -151,12 +181,15 @@ function getSectionContent({
 		res.on('end', function() {
 			console.log('数据接收完成!')
 			// 转码操作
-			var html = iconv.decode(Buffer.concat(chunks), 'gb2312');
+			// var html = iconv.decode(Buffer.concat(chunks), 'gb2312');
+			var html = iconv.decode(Buffer.concat(chunks), 'utf-8');
 			var $ = cheerio.load(html, {
 				// 如果设置为true，将对文档中的实体进行解码。默认为false。
-				decodeEntities: false
+				decodeEntities: true
 			});
-			sectionInfo = $('#content').text();
+			// sectionInfo = $('#content').text();
+			// sectionInfo = $('#booktext').text();
+			sectionInfo = $('.content').text();
 			let sectionContent = new SectionContent({
 				bookId: bookId,
 				bookName: bookName, // 书名
@@ -195,7 +228,7 @@ function saveDatabase(url) {
 						bookName: item.bookName, // 书名
 						author: item.author // 作者
 					})
-				}, 50 * index)
+				}, 1000 * index)
 			})
 		})
 	})
@@ -242,9 +275,9 @@ function aviodMissingSection (url) {
 		})
 	})
 }
-// aviodMissingSection('http://localhost:3000/api/book/catalog/44')
+// aviodMissingSection('http://localhost:3000/api/book/catalog/36?page=all')
 
-// saveDatabase('http://localhost:3000/api/book/catalog/44')
+// saveDatabase('http://localhost:3000/api/book/catalog/30?page=all')
 
 
 app.get('/', async function(req, res, next) {
