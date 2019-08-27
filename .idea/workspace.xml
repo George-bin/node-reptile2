@@ -2,12 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="62d2916e-b464-4cf0-ae18-da8a03034055" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/router/fiction/model/schemas/classifySchema.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/router/fiction/model/schemas/userSchema.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/config/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/router/fiction/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/fiction/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/router/fiction/model/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/fiction/model/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/router/fiction/model/schemas/classifySchema.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/fiction/model/schemas/classifySchema.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -20,56 +19,25 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1925">
-              <caret line="77" column="3" selection-start-line="77" selection-start-column="3" selection-end-line="77" selection-end-column="3" />
-              <folding>
-                <element signature="e#3059#4832#0" />
-                <element signature="e#4984#5829#0" />
-                <element signature="e#5945#6444#0" />
-                <element signature="e#6495#7479#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/router/fiction/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="200">
-              <caret line="66" column="21" selection-start-line="66" selection-start-column="21" selection-end-line="66" selection-end-column="21" />
+            <state relative-caret-position="899">
+              <caret line="332" column="9" lean-forward="true" selection-start-line="332" selection-start-column="9" selection-end-line="332" selection-end-column="9" />
               <folding>
-                <element signature="e#575#1292#0" />
+                <element signature="e#1450#2031#0" />
+                <element signature="e#2134#3220#0" />
+                <element signature="e#3302#3700#0" />
+                <element signature="e#3770#3894#0" />
+                <element signature="e#3970#5264#0" />
+                <element signature="e#5330#6411#0" />
+                <element signature="e#6482#7140#0" />
+                <element signature="e#7210#7831#0" />
+                <element signature="e#8180#8467#0" />
+                <element signature="e#8534#8906#0" />
+                <element signature="e#8997#9002#0" />
+                <element signature="e#8964#8969#0" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/classifySchema.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="250">
-              <caret line="10" column="62" selection-start-line="10" selection-start-column="48" selection-end-line="10" selection-end-column="62" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/bookSchema.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="125">
-              <caret line="5" column="25" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/router/fiction/model/index.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="9" column="10" selection-start-line="9" selection-start-column="10" selection-end-line="9" selection-end-column="10" />
             </state>
           </provider>
         </entry>
@@ -79,6 +47,15 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="800">
               <caret line="32" column="3" selection-start-line="32" selection-start-column="3" selection-end-line="32" selection-end-column="3" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/classifySchema.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="100">
+              <caret line="4" column="22" selection-start-line="4" selection-start-column="22" selection-end-line="4" selection-end-column="22" />
             </state>
           </provider>
         </entry>
@@ -136,9 +113,11 @@
         <option value="$PROJECT_DIR$/config/prod.js" />
         <option value="$PROJECT_DIR$/index.js" />
         <option value="$PROJECT_DIR$/config/index.js" />
-        <option value="$PROJECT_DIR$/router/fiction/model/schemas/classifySchema.js" />
-        <option value="$PROJECT_DIR$/router/fiction/model/index.js" />
         <option value="$PROJECT_DIR$/app.js" />
+        <option value="$PROJECT_DIR$/router/fiction/model/schemas/UserSchema.js" />
+        <option value="$PROJECT_DIR$/router/fiction/model/index.js" />
+        <option value="$PROJECT_DIR$/router/fiction/model/schemas/userSchema.js" />
+        <option value="$PROJECT_DIR$/router/fiction/model/schemas/classifySchema.js" />
         <option value="$PROJECT_DIR$/router/fiction/index.js" />
       </list>
     </option>
@@ -154,7 +133,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -197,6 +175,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -264,15 +243,15 @@
       <workItem from="1566781905478" duration="2471000" />
       <workItem from="1566795598939" duration="2211000" />
       <workItem from="1566801322142" duration="598000" />
+      <workItem from="1566894623232" duration="7281000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="88958000" />
+    <option name="totallyTimeSpent" value="96239000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4864865" visible="true" weight="0.1960991" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -281,7 +260,7 @@
       <window_info id="Favorites" order="4" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.33659065" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.21824104" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3995657" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -304,13 +283,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="100">
           <caret line="4" column="2" selection-start-line="4" selection-start-column="2" selection-end-line="5" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/sectionContentSchema.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="125">
-          <caret line="5" column="23" selection-start-line="5" selection-start-column="23" selection-end-line="5" selection-end-column="23" />
         </state>
       </provider>
     </entry>
@@ -346,34 +318,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/classifySchema.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="250">
-          <caret line="10" column="62" selection-start-line="10" selection-start-column="48" selection-end-line="10" selection-end-column="62" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/bookSchema.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="125">
-          <caret line="5" column="25" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/router/fiction/model/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="9" column="10" selection-start-line="9" selection-start-column="10" selection-end-line="9" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="800">
-          <caret line="32" column="3" selection-start-line="32" selection-start-column="3" selection-end-line="32" selection-end-column="3" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="125">
@@ -395,12 +339,65 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/router/fiction/index.js">
+    <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/sectionContentSchema.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="200">
-          <caret line="66" column="21" selection-start-line="66" selection-start-column="21" selection-end-line="66" selection-end-column="21" />
+          <caret line="8" column="25" lean-forward="true" selection-end-line="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/router/fiction/model/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="100">
+          <caret line="4" column="45" selection-start-line="4" selection-start-column="45" selection-end-line="4" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/bookSchema.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="125">
+          <caret line="5" column="25" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/userSchema.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="9" column="30" selection-start-line="9" selection-start-column="30" selection-end-line="9" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/router/fiction/model/schemas/classifySchema.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="100">
+          <caret line="4" column="22" selection-start-line="4" selection-start-column="22" selection-end-line="4" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="800">
+          <caret line="32" column="3" selection-start-line="32" selection-start-column="3" selection-end-line="32" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/router/fiction/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="899">
+          <caret line="332" column="9" lean-forward="true" selection-start-line="332" selection-start-column="9" selection-end-line="332" selection-end-column="9" />
           <folding>
-            <element signature="e#575#1292#0" />
+            <element signature="e#1450#2031#0" />
+            <element signature="e#2134#3220#0" />
+            <element signature="e#3302#3700#0" />
+            <element signature="e#3770#3894#0" />
+            <element signature="e#3970#5264#0" />
+            <element signature="e#5330#6411#0" />
+            <element signature="e#6482#7140#0" />
+            <element signature="e#7210#7831#0" />
+            <element signature="e#8180#8467#0" />
+            <element signature="e#8534#8906#0" />
+            <element signature="e#8997#9002#0" />
+            <element signature="e#8964#8969#0" />
           </folding>
         </state>
       </provider>

@@ -12,6 +12,7 @@ const Catalog = model.Catalog;
 const SectionContent = model.SectionContent;
 const Book = model.Book;
 const Classify = model.Classify;
+const User = model.User;
 
 // 状态码（errcode）
 // 999：操作数据库失败
@@ -22,51 +23,22 @@ const Classify = model.Classify;
 // 0：正常访问
 
 // 获取小说列表
-router.get('/list', function(req, res, next) {
+router.get('/list/:classifyId', function(req, res, next) {
 	console.log(req.session.username)
-	// let { classify } = req.query;
-	Book.find({}, function(err, bookList) {
+	let { classifyId } = req.params;
+	Book.find({classify: classifyId}, function(err, bookList) {
 		if (err) {
 			return res.send({
 				errcode: 999,
 				message: '查询数据库失败!'
 			})
 		}
-
-		// 所有分类
-		let allClassify = [];
-		bookList.forEach(item => {
-			if (!allClassify.includes(item.classify)) {
-				allClassify.push(item.classify)
-			}
-		});
-
-		// 所有分类信息
-		let classifyList = [];
-		allClassify.forEach(classifyName => {
-			let obj = {
-				classifyName,
-				bookList: []
-			};
-			bookList.forEach(book => {
-				if (classifyName === book.classify) {
-					obj.bookList.push(book)
-				}
-			});
-			classifyList.push(obj);
-		})
-
 		res.send({
 			errcode: 0,
 			message: '获取小说列表成功!',
-			classifyList
+			bookList
 		});
 	})
-})
-
-// 获取小说列表(classifyId)
-router.get('/listByClassifyId', function (req, res, next) {
-
 })
 
 // 小程序-获取openid
@@ -358,12 +330,30 @@ router.get('/classifyList', function (req, res, next) {
 			return res.send({
 				errcode: 999,
 				message: '获取分类失败!'
-			})
+			});
 		}
-		res.send({
-			errcode: 0,
-			message: '获取分类成功!',
-			classifyList
+		classifyList = JSON.parse(JSON.stringify(classifyList))
+		Book.find({}, function (err, bookList) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '获取小说列表失败!'
+				});
+			}
+			classifyList.forEach(classify => {
+				let count = 0;
+				bookList.forEach(book => {
+					if (classify.classifyId === book.classify) {
+						count += 1
+					}
+				})
+				classify.classifyBookCount = count;
+			})
+			res.send({
+				errcode: 0,
+				message: '获取分类成功!',
+				classifyList
+			})
 		})
 	})
 })
@@ -408,6 +398,46 @@ router.put('/updateClassify', function (req, res, next) {
     errcode: 0,
     message: '更新分类成功!'
   })
+})
+
+// 获取用户列表
+router.get('/getUserList', function (req, res, next) {
+	User.find({}, function (err, userList) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '读取数据库失败!'
+			})
+		}
+		res.send({
+			errcode: 0,
+			message: '获取用户列表成功!',
+			userList
+		})
+	})
+})
+
+// 新增用户
+router.post('/registerUser', function (req, res, next) {
+	let { body } = req
+	console.log(body)
+	let user = new User({
+		...body
+	})
+
+	user.save((err, classify) => {
+		if (err) {
+			return res.send({
+				errCode: 999,
+				message: '写入数据库失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '新增用户成功!'
+		});
+	})
+
 })
 
 module.exports = router;
