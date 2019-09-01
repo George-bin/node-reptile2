@@ -5,6 +5,7 @@ const express = require('express');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
 const serverConfig = require('./config');
 const multer = require('multer');
 const storage = multer.diskStorage({
@@ -27,8 +28,43 @@ const request = require('sync-request');
 // superagent是node里一个非常方便的、轻量的、渐进式的第三方客户端请求代理模块，用他来请求目标页面
 const superagent = require('superagent');
 
-// 路由
-const fictionRouter = require('./router/fiction');
+const app = express();
+// 使用session中间件
+app.use(session({
+	store: new RedisStore({
+		host: "192.168.142.138",
+		port: 6379,
+		db: "0"
+	}),
+	secret: 'this is string key',   // 可以随便写。 一个 String 类型的字符串，作为服务器端生成 session 的签名
+	name: 'session_id',/*保存在本地cookie的一个名字 默认connect.sid  可以不设置*/
+	resave: false,   /*强制保存 session 即使它并没有变化,。默认为 true。建议设置成 false。*/
+	saveUninitialized: true,   //强制将未初始化的 session 存储。  默认值是true  建议设置成true
+	cookie: {
+		maxAge: 5000    /*过期时间*/
+	},   /*secure https这样的情况才可以访问cookie*/
+	//设置过期时间比如是30分钟，只要游览页面，30分钟没有操作的话在过期
+	rolling: true //在每次请求时强行设置 cookie，这将重置 cookie 过期时间（默认：false）
+}));
+
+app.use(bodyParser.json())
+app.use(upload.any())
+
+let cors = serverConfig.cors;
+app.all('*', (req, res, next) => {
+	let ol = cors.split(',')
+	if (ol.includes(req.headers.origin) >= 0) {
+		res.header("Access-Control-Allow-Origin", req.headers.origin);
+		res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+		res.header("Access-Control-Allow-Headers","Content-Type");
+		res.header("Content-Type", "application/json;charset=utf-8");
+		res.header("Access-Control-Allow-Credentials", true);
+	}
+	console.log('sessionId', req.headers.sessionid)
+	console.log('session', req.session)
+	// if (req.session)
+	next();
+});
 
 // 数据库 start
 const mongoose = require('mongoose');
@@ -44,46 +80,15 @@ mongoose.connection.on('disconnected', function() {
 });
 // 数据库 end
 
-const app = express();
-app.use(bodyParser.json())
-app.use(upload.any())
-
-let cors = serverConfig.cors;
-app.all('*', (req, res, next) => {
-	let ol = cors.split(',')
-	if (ol.includes(req.headers.origin) >= 0) {
-		res.header("Access-Control-Allow-Origin", req.headers.origin);
-		res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-		res.header("Access-Control-Allow-Headers","Content-Type");
-		res.header("Content-Type", "application/json;charset=utf-8");
-		res.header("Access-Control-Allow-Credentials", true);
-	}
-	next();
-});
-
-// 使用session中间件
-app.use(session({
-	secret: 'this is string key',   // 可以随便写。 一个 String 类型的字符串，作为服务器端生成 session 的签名
-
-
-	name: 'session_id',/*保存在本地cookie的一个名字 默认connect.sid  可以不设置*/
-	resave: false,   /*强制保存 session 即使它并没有变化,。默认为 true。建议设置成 false。*/
-	saveUninitialized: true,   //强制将未初始化的 session 存储。  默认值是true  建议设置成true
-	cookie: {
-		maxAge: 5000    /*过期时间*/
-
-	},   /*secure https这样的情况才可以访问cookie*/
-	//设置过期时间比如是30分钟，只要游览页面，30分钟没有操作的话在过期
-	rolling: true //在每次请求时强行设置 cookie，这将重置 cookie 过期时间（默认：false）
-}))
-
 const model = require("./router/fiction/model");
 const Catalog = model.Catalog;
 const SectionContent = model.SectionContent;
 
+// 路由
+const fictionRouter = require('./router/fiction');
 // 小说路由
-app.use('/api/book/', fictionRouter)
-app.use(express.static(path.join(__dirname, 'public')))
+app.use('/api/book/', fictionRouter);
+app.use(express.static(path.join(__dirname, 'public')));
 
 let url = 'https://m.23us23us.com/68/68397/';
 // getCatalog({

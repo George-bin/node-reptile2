@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
+const md5 = require('md5-node');
 //定义路由级中间件
 const router = express.Router();
 const serverConfig = require('../../config');
@@ -22,7 +23,43 @@ const User = model.User;
 // 995：查询参数错误 => get
 // 0：正常访问
 
-// 获取小说列表
+// 获取小说列表（概览）
+router.get('/list/base', function (req, res, next) {
+	console.log('session-list', req.session)
+	Classify.find({}, function (err, classifyList) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '获取分类失败!'
+			});
+		}
+		classifyList = JSON.parse(JSON.stringify(classifyList))
+		Book.find({}, function (err, bookList) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '获取小说列表失败!'
+				});
+			}
+			classifyList.forEach(classify => {
+				let list = [];
+				bookList.forEach(book => {
+					if (classify.classifyId === book.classify) {
+						list.push(book);
+					}
+				})
+				classify.bookList = list.slice(0, 3);
+			})
+			res.send({
+				errcode: 0,
+				message: '获取分类成功!',
+				classifyList
+			})
+		})
+	})
+})
+
+// 获取指定分类小说列表
 router.get('/list/:classifyId', function(req, res, next) {
 	console.log(req.session.username)
 	let { classifyId } = req.params;
@@ -42,7 +79,7 @@ router.get('/list/:classifyId', function(req, res, next) {
 })
 
 // 小程序-获取openid
-router.post('/getOpenid', function (req, res, next) {
+router.post('/wx/login', function (req, res, next) {
 	// appid: wx87fc79ea9b023224
 	// secret: e6299f3b30b964ec41b1ed57d9daabd4
 	let { code } = req.body;
@@ -53,19 +90,22 @@ router.post('/getOpenid', function (req, res, next) {
 		});
 		res2.on('end', function () {
 			chunks = JSON.parse(chunks);
-			console.log(chunks.openid)
+			// console.log('req.session', req.session)
 			// 设置session
-			req.session.username = chunks.openid;
-			console.log(req.session)
-			res.send(chunks)
+			req.session.openid = chunks.openid;
+			// console.log(req.session)
+			// res.header
+			res.send({
+				sessionId: md5(chunks.openid)
+			})
 		});
 	})
 });
 
 // 获取小说目录 query => page: 页数 limit: 每次获取的数量
 router.get('/catalog/:bookId', function(req, res, next) {
-	console.log(req.params)
-	console.log(req.query)
+	console.log(req.session)
+	// console.log(req.query)
 	let { bookId } = req.params
 	let { page, limit } = req.query
 	// 爬取书籍
@@ -214,7 +254,7 @@ router.post('/uploadfile/bookCover', function (req, res, next) {
 	})
 })
 
-// 注册小说
+// 新增小说
 router.post('/registerBook', function (req, res, next) {
 	console.log(req.body)
 	let { body } = req
@@ -383,8 +423,7 @@ router.put('/updateClassify', function (req, res, next) {
   let { body } = req
   Classify.update({ _id: body._id }, {
     classifyId: body.classifyId,
-    classifyName: body.classifyName,
-    classifyBookCount: body.classifyBookCount
+    classifyName: body.classifyName
   }, function (err, res) {
     if (err) {
       return res.send({
