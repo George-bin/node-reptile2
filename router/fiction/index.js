@@ -61,7 +61,6 @@ router.get('/list/base', function (req, res, next) {
 
 // 获取指定分类小说列表
 router.get('/list/:classifyId', function(req, res, next) {
-	console.log(req.session.username)
 	let { classifyId } = req.params;
 	Book.find({classify: classifyId}, function(err, bookList) {
 		if (err) {
@@ -195,11 +194,11 @@ router.get('/content/:bookId/:sectionId', function(req, res, next) {
 })
 
 // 返回图片
-router.get('/public/uploads/images/*', function (req, res) {
-	console.log(req.url)
-	res.header('Content-Type', 'image/jpeg')
-	res.sendFile(path.join(__dirname, `../../${req.url}`));
-})
+// router.get('/public/uploads/images/*', function (req, res) {
+// 	console.log(req.url)
+// 	res.header('Content-Type', 'image/jpeg')
+// 	res.sendFile(path.join(__dirname, `../../${req.url}`));
+// })
 
 // 上传书籍封面
 router.post('/uploadfile/bookCover', function (req, res, next) {
@@ -209,7 +208,8 @@ router.post('/uploadfile/bookCover', function (req, res, next) {
 	let { oldFilePath } = req.body;
 	let mimetype = req.files[0].mimetype.split('/')[1];
 	let filename = `${Date.now()}${parseInt((Math.random() + 1) * 10000)}.${mimetype}`;
-	let filePath =  path.join(__dirname, `../../public/uploads/images/${filename}`) ;
+	// let filePath =  path.join(__dirname, `../../public/uploads/images/${filename}`);
+	let filePath =  `D:/public/uploads/images/${filename}`;
 	console.log(filePath)
 	fs.readFile(req.files[0].path, function (err, data) {
 		if (err) {
@@ -236,8 +236,9 @@ router.post('/uploadfile/bookCover', function (req, res, next) {
 				});
 				// 删除之前上传的图片（重新上传）
 				if (oldFilePath) {
-					oldFilePath = oldFilePath.split('book/')[1]
-					fs.unlink(path.join(__dirname, `../../${oldFilePath}`), (err) => {
+					oldFilePath = oldFilePath.split('/file/')[1]
+					let oldFile = serverConfig.model === 'development' ? `D:/public/${oldFilePath}` : path.join(__dirname, `../../${oldFilePath}`)
+					fs.unlink(oldFile, (err) => {
 						if (err) {
 							console.log('删除文件失败2');
 							console.log(err)
@@ -247,7 +248,8 @@ router.post('/uploadfile/bookCover', function (req, res, next) {
 				res.send({
 					errCode: 0,
 					message: '上传成功!',
-					filePath: `http://${serverConfig.host}:${serverConfig.port}/api/book/public/uploads/images/${filename}`
+					// filePath: `http://${serverConfig.host}:${serverConfig.port}/api/book/public/uploads/images/${filename}`
+					filePath: `http://${serverConfig.host}/file/uploads/images/${filename}`
 				})
 			})
 		}

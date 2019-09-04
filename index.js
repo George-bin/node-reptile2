@@ -11,7 +11,7 @@ httpServer.on('error', function() {
 	console.log('服务启动失败!')
 });
 httpServer.on('listening', function() {
-	console.log('服务启动，端口80!');
+	console.log(`服务启动，端口${serverConfig.port}!`);
 });
 // 启动服务 end
 
