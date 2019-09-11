@@ -3,11 +3,13 @@ const SectionContent = require('./schemas/sectionContentSchema.js');
 const Book = require('./schemas/bookSchema.js');
 const Classify = require('./schemas/classifySchema.js');
 const User = require('./schemas/userSchema.js');
+const ManageUser = require('./schemas/bookManageUserSchema.js');
 
 module.exports = {
 	Catalog,
 	SectionContent,
 	Book,
 	Classify,
-	User
+	User,
+	ManageUser
 }

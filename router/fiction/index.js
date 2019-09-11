@@ -14,6 +14,7 @@ const SectionContent = model.SectionContent;
 const Book = model.Book;
 const Classify = model.Classify;
 const User = model.User;
+const ManageUser = model.ManageUser;
 
 // 状态码（errcode）
 // 999：操作数据库失败
@@ -21,6 +22,7 @@ const User = model.User;
 // 997：该章节不存在
 // 996：上传文件失败
 // 995：查询参数错误 => get
+// 994：登录失败
 // 0：正常访问
 
 // 获取小说列表（概览）
@@ -67,7 +69,7 @@ router.get('/list/:classifyId', function(req, res, next) {
 			return res.send({
 				errcode: 999,
 				message: '查询数据库失败!'
-			})
+			});
 		}
 		res.send({
 			errcode: 0,
@@ -77,29 +79,74 @@ router.get('/list/:classifyId', function(req, res, next) {
 	})
 })
 
-// 小程序-获取openid
+// 获取管理端用户列表
+// router.get('/manage/list', function (req, res, next) {
+// 	ManageUser.find({}, function (err, data) {
+// 		res.send(data)
+// 	})
+// })
+
+// 小说管理员登录
+router.post('/manage/login', function (req, res, next) {
+	let { body } = req;
+	// console.log('请求信息')
+	// console.log(body)
+	ManageUser.find({ account: body.account, password: body.password }, function (err, manageUserList) {
+		console.log(manageUserList)
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '查询数据库失败!'
+			})
+		}
+		if (manageUserList.length) {
+			req.session.username = { account: body.account, password: body.password }
+			return res.send({
+				errcode: 0,
+				message: '登录成功!'
+			});
+		} else {
+			res.send({
+				errcode: 994,
+				message: '登录失败!'
+			});
+		}
+	})
+})
+
+// 小程序登录-通过openid维护登录态
 router.post('/wx/login', function (req, res, next) {
 	// appid: wx87fc79ea9b023224
 	// secret: e6299f3b30b964ec41b1ed57d9daabd4
 	let { code } = req.body;
-	https.get(`https://api.weixin.qq.com/sns/jscode2session?appid=wx87fc79ea9b023224&secret=e6299f3b30b964ec41b1ed57d9daabd4&js_code=${code}&grant_type=authorization_code`, function (res2) {
+	let appId = 'wx87fc79ea9b023224'
+	let secret = 'e6299f3b30b964ec41b1ed57d9daabd4'
+	https.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${secret}&js_code=${code}&grant_type=authorization_code`, function (res2) {
 		let chunks = ''
 		res2.on('data', function (chunk) {
 			chunks += chunk;
 		});
 		res2.on('end', function () {
 			chunks = JSON.parse(chunks);
-			// console.log('req.session', req.session)
 			// 设置session
-			req.session.openid = chunks.openid;
-			// console.log(req.session)
-			// res.header
+			req.session.username = chunks;
 			res.send({
-				sessionId: md5(chunks.openid)
+				errcode: 0,
+				message: '登录成功!'
 			})
 		});
 	})
 });
+
+// 获取树架信息
+router.get('/bookrackInfo', function (req, res, next) {
+	console.log('书架信息')
+	console.log(req.session)
+	res.send({
+		errcode: 0,
+		message: '获取书架信息成功!'
+	})
+})
 
 // 获取小说目录 query => page: 页数 limit: 每次获取的数量
 router.get('/catalog/:bookId', function(req, res, next) {
