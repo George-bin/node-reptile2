@@ -6,8 +6,9 @@ const user = new mongoose.Schema({
   username: String, // 用户昵称
   name: String, // 用户名称
   jurisdiction: String, // 用户权限
-  bookIdList: String, // 用户书架
-  headPortarit: String // 用户头像
+  bookIdList: Array, // 用户书架
+  avatarUrl: String, // 用户头像
+  openid: String // 微信小程序用户id
 }, {
   collection: 'bookUserList'
 })

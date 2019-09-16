@@ -5,13 +5,12 @@ const express = require('express');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const RedisStore = require('connect-redis')(session);
+// const RedisStore = require('connect-redis')(session);
 const serverConfig = require('./config');
 const multer = require('multer');
 const storage = multer.diskStorage({
 	// destination: 'D:\\public\\uploads\\'+ new Date().getFullYear() + (new Date().getMonth()+1) + new Date().getDate()
-	// destination: path.join(__dirname, 'public')
-	destination: `D:\\public`
+	destination: serverConfig.model === 'production' ? '/public/uploads/' : `D:\\public`
 });
 // 设置保存上传文件路径
 const upload = multer({storage})
@@ -38,7 +37,7 @@ app.use(session({
 	secret: 'sysuygm',
 	cookie: {
 		// session的过期时间
-		maxAge: 60000,
+		maxAge: 2 * 60 * 60 * 1000,
 		httpOnly: false
 	},
 	resave: false,
@@ -50,21 +49,28 @@ app.use(upload.any())
 
 let cors = serverConfig.cors;
 app.all('*', (req, res, next) => {
-	let ol = cors.split(',')
-	if (ol.includes(req.headers.origin) >= 0) {
-		res.header("Access-Control-Allow-Origin", req.headers.origin);
-		res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-		res.header("Access-Control-Allow-Headers","Content-Type");
-		res.header("Content-Type", "application/json;charset=utf-8");
-		res.header("Access-Control-Allow-Credentials", true);
-	}
+	// console.log(req.headers.origin)
+	// let ol = cors.split(',')
+	// if (ol.includes(req.headers.origin) >= 0) {
+	// 	res.header("Access-Control-Allow-Origin", req.headers.origin);
+	// 	res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+	// 	res.header("Access-Control-Allow-Headers","Content-Type");
+	// 	res.header("Content-Type", "application/json;charset=utf-8");
+	// 	res.header("Access-Control-Allow-Credentials", true);
+	// }
+
+	// res.header("Access-Control-Allow-Origin", req.headers.origin);
+	// res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+	// res.header("Access-Control-Allow-Headers","Content-Type");
+	// res.header("Content-Type", "application/json;charset=utf-8");
+	// res.header("Access-Control-Allow-Credentials", true);
 	next();
 });
 
 // 数据库 start
 const mongoose = require('mongoose');
 // 连接数据库（vueData为数据库的名字）
-mongoose.connect('mongodb://localhost:27017/ReptileData');
+mongoose.connect('mongodb://localhost:27017/ReptileData', { useNewUrlParser: true });
 // connect()返回一个状态待定（pending）的接连，接着加上成功提醒和失败警告；
 mongoose.connection.on('error', console.error.bind(console, '数据库连接失败!'));
 mongoose.connection.once('open', function() {
@@ -83,6 +89,7 @@ const SectionContent = model.SectionContent;
 const fictionRouter = require('./router/fiction');
 // 小说路由
 app.use('/api/book/', fictionRouter);
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 let url = 'https://m.23us23us.com/68/68397/';

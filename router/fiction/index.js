@@ -23,7 +23,12 @@ const ManageUser = model.ManageUser;
 // 996：上传文件失败
 // 995：查询参数错误 => get
 // 994：登录失败
-// 0：正常访问
+// 993: 用户不存在
+// 992: 密码错误
+// 991: 服务器session失效
+// 990: 退出登录失败
+// 889: 当前书籍已经加入书架
+// 0：正常访问(按预期流程进行)
 
 // 获取小说列表（概览）
 router.get('/list/base', function (req, res, next) {
@@ -100,7 +105,7 @@ router.post('/manage/login', function (req, res, next) {
 			})
 		}
 		if (manageUserList.length) {
-			req.session.username = { account: body.account, password: body.password }
+			req.session.userInfo = { account: body.account, password: body.password }
 			return res.send({
 				errcode: 0,
 				message: '登录成功!'
@@ -114,8 +119,8 @@ router.post('/manage/login', function (req, res, next) {
 	})
 })
 
-// 小程序登录-通过openid维护登录态
-router.post('/wx/login', function (req, res, next) {
+// 小程序-通过openid维护登录态
+router.post('/wx/getOpenid', function (req, res, next) {
 	// appid: wx87fc79ea9b023224
 	// secret: e6299f3b30b964ec41b1ed57d9daabd4
 	let { code } = req.body;
@@ -129,7 +134,7 @@ router.post('/wx/login', function (req, res, next) {
 		res2.on('end', function () {
 			chunks = JSON.parse(chunks);
 			// 设置session
-			req.session.username = chunks;
+			req.session.userInfo = chunks;
 			res.send({
 				errcode: 0,
 				message: '登录成功!'
@@ -138,14 +143,169 @@ router.post('/wx/login', function (req, res, next) {
 	})
 });
 
-// 获取树架信息
-router.get('/bookrackInfo', function (req, res, next) {
-	console.log('书架信息')
+// 小程序-登录
+router.post('/wx/login', function (req, res, next) {
 	console.log(req.session)
-	res.send({
-		errcode: 0,
-		message: '获取书架信息成功!'
+	let { userInfo } = req.session;
+	let { body } = req;
+	// session失效
+	if (!userInfo) {
+		return res.send({
+			errcode: 991,
+			message: '服务器登录态失效!'
+		})
+	}
+	User.findOne({ account: body.account }, (err, user) => {
+		console.log(body)
+		console.log(user)
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '查询用户失败!'
+			})
+		}
+		if (user) {
+			if (body.password === user.password) {
+				if (!user.openid) {
+					User.findOneAndUpdate({ account: body.account }, {
+						openid: userInfo.openid,
+						username: body.username,
+						avatarUrl: body.avatarUrl
+					}, (err, data) => {
+						if (err) {
+							return res.send({
+								errcode: 999,
+								message: 'openid写入数据库失败!'
+							})
+						}
+						res.send({
+							errcode: 0,
+							message: '登录成功!',
+							userInfo: {
+								account: user.account,
+								password: user.password,
+								username: body.username,
+								name: user.name,
+								jurisdiction: user.jurisdiction,
+								avatarUrl: body.avatarUrl,
+								bookIdList: user.bookIdList
+							}
+						})
+					})
+				} else {
+					res.send({
+						errcode: 0,
+						message: '登录成功!',
+						userInfo: {
+							account: user.account,
+							password: user.password,
+							username: user.username,
+							name: user.name,
+							jurisdiction: user.jurisdiction,
+							avatarUrl: user.avatarUrl,
+							bookIdList: user.bookIdList
+						}
+					})
+				}
+			} else {
+				res.send({
+					errcode: 992,
+					message: '密码错误!'
+				})
+			}
+		} else {
+			res.send({
+				errcode: 993,
+				message: '该用户不存在!'
+			})
+		}
 	})
+})
+
+// 获取用户信息
+router.get('/wx/getUserInfo', function (req, res, next) {
+	let { userInfo } = req.session;
+	if (!userInfo) {
+		return res.send({
+			errcode: 991,
+			message: '服务器登录态失效!'
+		})
+	}
+	User.findOne({ openid: userInfo.openid }, function (err, user) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '获取用户信息失败!'
+			});
+		}
+		if (!user) {
+			return res.send({
+				errcode: 993,
+				message: '当前用户不存在!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '获取用户信息成功!',
+			userInfo: user
+		});
+	});
+})
+
+// 小程序-注销
+router.post('/wx/logon', function (req, res, next) {
+	console.log(req.session)
+	if (req.session) {
+		req.session.destroy(function (err) {
+			if (err) {
+				return res.send({
+					errcode: 990,
+					message: '退出登录失败!'
+				});
+			}
+			res.send({
+				errcode: 0,
+				message: '退出登录成功!'
+			});
+		})
+	}
+})
+
+// 获取书架信息
+router.get('/bookrackInfo', function (req, res, next) {
+	// console.log('书架信息')
+	console.log(req.session)
+	let { userInfo } = req.session;
+	if (!userInfo) {
+		return res.send({
+			errcode: 0,
+			message: '当前登录态已经失效!'
+		})
+	}
+	User.findOne({ openid: userInfo.openid }, function (err, user) {
+		console.log(user.bookIdList)
+		let searchArr = [];
+		user.bookIdList.forEach(item => {
+			searchArr.push({
+				bookId: item
+			})
+		})
+		Book.find({
+			$or: searchArr
+		}, function (err, bookList) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '获取书架信息失败!'
+				})
+			}
+			res.send({
+				errcode: 0,
+				message: '获取书架信息成功!',
+				bookList
+			});
+		})
+	});
 })
 
 // 获取小说目录 query => page: 页数 limit: 每次获取的数量
@@ -255,9 +415,8 @@ router.post('/uploadfile/bookCover', function (req, res, next) {
 	let { oldFilePath } = req.body;
 	let mimetype = req.files[0].mimetype.split('/')[1];
 	let filename = `${Date.now()}${parseInt((Math.random() + 1) * 10000)}.${mimetype}`;
-	// let filePath =  path.join(__dirname, `../../public/uploads/images/${filename}`);
-	let filePath =  `D:/public/uploads/images/${filename}`;
-	console.log(filePath)
+	let filePath =  serverConfig.model === 'production' ? `/home/public/uploads/images/bookcover/${filename}` : `D:/public/uploads/images/${filename}`;
+	// console.log(filePath)
 	fs.readFile(req.files[0].path, function (err, data) {
 		if (err) {
 			res.send({
@@ -282,9 +441,10 @@ router.post('/uploadfile/bookCover', function (req, res, next) {
 					}
 				});
 				// 删除之前上传的图片（重新上传）
+
 				if (oldFilePath) {
 					oldFilePath = oldFilePath.split('/file/')[1]
-					let oldFile = serverConfig.model === 'development' ? `D:/public/${oldFilePath}` : path.join(__dirname, `../../${oldFilePath}`)
+					let oldFile = serverConfig.model === 'development' ? `D:/public/${oldFilePath}` : oldFilePath
 					fs.unlink(oldFile, (err) => {
 						if (err) {
 							console.log('删除文件失败2');
@@ -296,7 +456,7 @@ router.post('/uploadfile/bookCover', function (req, res, next) {
 					errCode: 0,
 					message: '上传成功!',
 					// filePath: `http://${serverConfig.host}:${serverConfig.port}/api/book/public/uploads/images/${filename}`
-					filePath: `http://${serverConfig.host}/file/uploads/images/${filename}`
+					filePath: `http://${serverConfig.host}/file/uploads/images/bookcover/${filename}`
 				})
 			})
 		}
@@ -377,7 +537,7 @@ router.put('/updateBookInfo', function (req, res, next) {
 		})
 	})
 })
-
+''
 // 删除小说
 router.delete('/delete/:bookId', function (req, res, next) {
 	let { params } = req;
@@ -511,7 +671,7 @@ router.post('/registerUser', function (req, res, next) {
 	console.log(body)
 	let user = new User({
 		...body
-	})
+	});
 
 	user.save((err, classify) => {
 		if (err) {
@@ -525,7 +685,99 @@ router.post('/registerUser', function (req, res, next) {
 			message: '新增用户成功!'
 		});
 	})
+})
 
+// 删除用户
+router.delete('/deleteUser/:userId', function (req, res, next) {
+	let { userId } = req.params;
+	console.log('userId', userId)
+	User.deleteOne({ _id: userId }, (err, data) => {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '删除用户失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '删除用户成功!'
+		})
+	})
+})
+
+// 更新用户信息
+router.put('/updateUserInfo/:_id', function (req, res, next) {
+	let { body } = req;
+	User.findOneAndUpdate({ _id: body._id }, {
+		account: body.account,
+		password: body.password,
+		name: body.name,
+		jurisdiction: body.jurisdiction,
+	}, (err, user) => {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '更新用户信息失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '更新用户信息成功!'
+		})
+	})
+
+})
+
+// 加入书架
+router.post('/joinBookrack', function (req, res, next) {
+	let { bookId } = req.body;
+	console.log(req.session)
+	let { userInfo } = req.session
+	if (userInfo) {
+		User.findOne({ openid: userInfo.openid }, function (err, user) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '获取用户信息失败!'
+				})
+			}
+			if (user) {
+				// console.log(user)
+				let { bookIdList } = user;
+				// 当前书籍已添加至书架
+				if (bookIdList.includes(bookId)) {
+					return res.send({
+						errcode: 889,
+						message: '当前书籍已经添加至书架!'
+					})
+				}
+				bookIdList = JSON.parse(JSON.stringify(bookIdList));
+				bookIdList.push(bookId);
+				User.findOneAndUpdate({ openid: userInfo.openid }, { bookIdList }, function (err, data) {
+					if (err) {
+						return res.send({
+							errcode: 999,
+							message: '加入书架失败!'
+						})
+					}
+					res.send({
+						errcode: 0,
+						message: '加入书架成功!'
+					});
+				})
+			} else {
+				res.send({
+					errcode: 993,
+					message: '当前用户不存在!'
+				})
+			}
+		})
+	} else {
+		res.send({
+			errcode: 991,
+			message: '服务器登录态失效!'
+		})
+	}
 })
 
 module.exports = router;
