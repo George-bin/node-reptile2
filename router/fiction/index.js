@@ -762,7 +762,8 @@ router.post('/joinBookrack', function (req, res, next) {
 					}
 					res.send({
 						errcode: 0,
-						message: '加入书架成功!'
+						message: '加入书架成功!',
+						bookIdList
 					});
 				})
 			} else {
@@ -779,5 +780,8 @@ router.post('/joinBookrack', function (req, res, next) {
 		})
 	}
 })
+
+// 移出书架
+router.post('/')
 
 module.exports = router;
