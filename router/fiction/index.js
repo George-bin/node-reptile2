@@ -187,8 +187,7 @@ router.post('/wx/login', function (req, res, next) {
 								username: body.username,
 								name: user.name,
 								jurisdiction: user.jurisdiction,
-								avatarUrl: body.avatarUrl,
-								bookIdList: user.bookIdList
+								avatarUrl: body.avatarUrl
 							}
 						})
 					})
@@ -202,8 +201,7 @@ router.post('/wx/login', function (req, res, next) {
 							username: user.username,
 							name: user.name,
 							jurisdiction: user.jurisdiction,
-							avatarUrl: user.avatarUrl,
-							bookIdList: user.bookIdList
+							avatarUrl: user.avatarUrl
 						}
 					})
 				}
@@ -244,6 +242,7 @@ router.get('/wx/getUserInfo', function (req, res, next) {
 				message: '当前用户不存在!'
 			});
 		}
+		delete user.bookIdList
 		res.send({
 			errcode: 0,
 			message: '获取用户信息成功!',
@@ -375,6 +374,14 @@ router.get('/catalog/:bookId', function(req, res, next) {
 
 // 获取小说章节内容
 router.get('/content/:bookId/:sectionId', function(req, res, next) {
+	let { userInfo } = req.session;
+	if (!userInfo) {
+		return res.send({
+			errcode: '991',
+			message: '用户登录态失效!'
+		})
+	}
+
 	SectionContent.find({
 		bookId: req.params.bookId,
 		sectionId: req.params.sectionId
@@ -762,8 +769,7 @@ router.post('/joinBookrack', function (req, res, next) {
 					}
 					res.send({
 						errcode: 0,
-						message: '加入书架成功!',
-						bookIdList
+						message: '加入书架成功!'
 					});
 				})
 			} else {
@@ -782,6 +788,51 @@ router.post('/joinBookrack', function (req, res, next) {
 })
 
 // 移出书架
-router.post('/')
+router.post('/removeBookrack', function (req, res, next) {
+	let { userInfo } = req.session;
+	let { bookId } = req.body;
+	console.log(userInfo)
+	console.log(bookId)
+	if (!userInfo) {
+		return res.send({
+			errcode: 991,
+			message: '服务器登录态失效!'
+		})
+	}
+	User.findOne({ openid: userInfo.openid }, function (err, user) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '获取用户信息失败!'
+			});
+		}
+		if (!user) {
+			return res.send({
+				errcode: 993,
+				message: '当前用户不存在!'
+			});
+		}
+		let { bookIdList } = user;
+		bookIdList = JSON.parse(JSON.stringify(bookIdList))
+		let index = bookIdList.findIndex((item) => {
+			return item === bookId
+		});
+		bookIdList.splice(index, 1);
+		User.findOneAndUpdate({ openid: userInfo.openid }, { bookIdList }, function (err, data) {
+			if (err) {
+				res.send({
+					errcode: 999,
+					messgae: '移出书架失败!'
+				});
+			} else {
+				res.send({
+					errcode: 0,
+					message: '移出书架成功!',
+					bookId
+				})
+			}
+		})
+	})
+})
 
 module.exports = router;
