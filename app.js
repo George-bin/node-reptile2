@@ -11,7 +11,7 @@ const multer = require("multer");
 const storage = multer.diskStorage({
   // destination: 'D:\\public\\uploads\\'+ new Date().getFullYear() + (new Date().getMonth()+1) + new Date().getDate()
   destination:
-    serverConfig.model === "production" ? "/public/uploads/" : `D:\\public`
+    serverConfig.model === "production" ? "/public/uploads/" : `‎/⁨Macintosh HD⁩/⁨用户⁩/⁨george/⁨文稿/public⁩`
 });
 // 设置保存上传文件路径
 const upload = multer({ storage });
