@@ -8,7 +8,7 @@ const sectionContent = new mongoose.Schema({
 	sectionId: String, // 章节id
 	content: String // 章节内容
 }, {
-	collection: 'sectionContent'
+	collection: 'section_content'
 })
 
-module.exports = mongoose.model('sectionContent', sectionContent)
+module.exports = mongoose.model('section_content', sectionContent)

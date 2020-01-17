@@ -10,7 +10,7 @@ const user = new mongoose.Schema({
   avatarUrl: String, // 用户头像
   openid: String // 微信小程序用户id
 }, {
-  collection: 'bookUserList'
-})
+  collection: 'user_list'
+});
 
-module.exports = mongoose.model('bookUserList', user)
+module.exports = mongoose.model('user_list', user)

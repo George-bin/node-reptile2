@@ -13,7 +13,7 @@ const bookSchema = new mongoose.Schema({
 	like: Number, // 点赞
 	label: String // 标签
 }, {
-	collection: 'bookList'
+	collection: 'book_list'
 })
 
-module.exports = mongoose.model('bookList', bookSchema)
+module.exports = mongoose.model('book_list', bookSchema)

@@ -374,13 +374,13 @@ router.get('/catalog/:bookId', function(req, res, next) {
 
 // 获取小说章节内容
 router.get('/content/:bookId/:sectionId', function(req, res, next) {
-	let { userInfo } = req.session;
-	if (!userInfo) {
-		return res.send({
-			errcode: '991',
-			message: '用户登录态失效!'
-		})
-	}
+	// let { userInfo } = req.session;
+	// if (!userInfo) {
+	// 	return res.send({
+	// 		errcode: '991',
+	// 		message: '用户登录态失效!'
+	// 	})
+	// }
 
 	SectionContent.find({
 		bookId: req.params.bookId,
@@ -543,8 +543,8 @@ router.put('/updateBookInfo', function (req, res, next) {
 			message: '更新数据成功!'
 		})
 	})
-})
-''
+});
+
 // 删除小说
 router.delete('/delete/:bookId', function (req, res, next) {
 	let { params } = req;
