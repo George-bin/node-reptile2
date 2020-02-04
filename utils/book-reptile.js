@@ -13,15 +13,15 @@ const request = require("sync-request");
 const superagent = require("superagent");
 
 const model = require("../router/fiction/model");
-const Catalog = model.Catalog;
-const SectionContent = model.SectionContent;
+const Catalog2 = model.Catalog2;
+const SectionContent2 = model.SectionContent2;
 
-let url = "https://www.qb5.tw/shu/1795.html";
+let url = "https://www.qb5.tw/shu/414.html";
 // getCatalog({
 // 	url,
-// 	bookId: 1,
-// 	bookName: '太古剑尊',
-// 	author: '青石细语'
+// 	bookId: 2,
+// 	bookName: '神藏',
+// 	author: '打眼'
 // });
 // 获取小说目录
 let catalog = [];
@@ -45,7 +45,7 @@ function getCatalog({ url, bookId, bookName, author }) {
           decodeEntities: false
         });
         // $('.chapterNum li a').each((idx, ele) => {
-        // 	let catalog = new Catalog({
+        // 	let catalog = new Catalog2({
         // 		bookId: bookId,
         // 		bookName: bookName,
         // 		author: author,
@@ -61,7 +61,7 @@ function getCatalog({ url, bookId, bookName, author }) {
         // 全本小说
         $('.zjlist dd:nth-child(n+4) a').each((idx, ele) => {
         	console.log($(ele).text())
-        	let catalog = new Catalog({
+        	let catalog = new Catalog2({
         		bookId: bookId,
         		bookName: bookName,
         		author: author,
@@ -77,7 +77,7 @@ function getCatalog({ url, bookId, bookName, author }) {
         // 66小说网
         // $(".chapters li:nth-child(n+2) a").each((idx, ele) => {
         //   console.log("啦啦啦");
-        //   let catalog = new Catalog({
+        //   let catalog = new Catalog2({
         //     bookId: bookId,
         //     bookName: bookName,
         //     author: author,
@@ -125,7 +125,7 @@ function getSectionContent({
         sectionInfo = $('#content').text();
         // sectionInfo = $('#booktext').text();
         // sectionInfo = $(".content").text();
-        let sectionContent = new SectionContent({
+        let sectionContent = new SectionContent2({
           bookId: bookId,
           bookName: bookName, // 书名
           author: author, // 作者
@@ -146,75 +146,56 @@ function getSectionContent({
 }
 
 // 保存至数据库
-function saveDatabase(url) {
-  http.get(url, function(res) {
-    let chunks = "";
-    res.on("data", function(chunk) {
-      chunks += chunk;
+function saveDatabase() {
+  Catalog2.find({}, function(err, catalogs) {
+    if (err) {
+      console.log('获取目录失败!')
+      return
+    }
+    catalogs.forEach((item, index) => {
+      setTimeout(() => {
+        getSectionContent({
+          url: item.url,
+          bookId: item.bookId,
+          title: item.title,
+          sectionId: item.sectionId,
+          bookName: item.bookName, // 书名
+          author: item.author // 作者
+        });
+      }, 500 * index);
     });
-    res.on("end", function() {
-      let catalogs = JSON.parse(chunks).catalogData;
-      catalogs.forEach((item, index) => {
-        setTimeout(() => {
-          getSectionContent({
-            url: item.url,
-            bookId: item.bookId,
-            title: item.title,
-            sectionId: item.sectionId,
-            bookName: item.bookName, // 书名
-            author: item.author // 作者
-          });
-        }, 1000 * index);
-      });
-    });
-  });
+  })
 }
 
 // 完善章节（避免漏掉）
-function aviodMissingSection(url) {
-  http.get(url, function(res) {
-    let chunks = "";
-    res.on("data", function(chunk) {
-      console.log("数据进来啦");
-      chunks += chunk;
-    });
-    res.on("end", function() {
-      console.log("数据接收完成");
-      let catalogs = JSON.parse(chunks).catalogData;
-
-      catalogs.forEach((item, index) => {
-        // console.log(item.bookName);
-        setTimeout(() => {
-          http.get(
-            `http://localhost:8888/api/book/content/${item.bookId}/${item.sectionId}`,
-            function(res2) {
-              let data = "";
-              res2.on("data", function(chunk) {
-                // console.log('数据进来啦')
-                data += chunk;
-              });
-              res2.on("end", function() {
-                // console.log(data);
-                data = JSON.parse(data);
-                if (data.errcode !== 0) {
-                  console.log("补漏调用")
-                  getSectionContent({
-                    url: item.url,
-                    bookId: item.bookId,
-                    title: item.title,
-                    sectionId: item.sectionId,
-                    bookName: item.bookName, // 书名
-                    author: item.author // 作者
-                  });
-                }
-              });
-            }
-          );
-        }, 50 * index);
-      });
+function aviodMissingSection() {
+  Catalog2.find({}, function(err, catalogs) {
+    catalogs.forEach((item, index) => {
+      // console.log(item.bookName);
+      setTimeout(() => {
+        SectionContent2.findOne({
+          bookId: item.bookId,
+          sectionId: item.sectionId
+        }, function(err, section) {
+          if (err) {
+            console.log('获取章节信息错误!')
+            return
+          }
+          if (!section) {
+            getSectionContent({
+              url: item.url,
+              bookId: item.bookId,
+              title: item.title,
+              sectionId: item.sectionId,
+              bookName: item.bookName, // 书名
+              author: item.author // 作者
+            });
+          }
+        });
+      }, 50 * index);
     });
   });
 }
-// aviodMissingSection('http://localhost:8888/api/book/catalog/1?page=all')
+// aviodMissingSection()
 
-// saveDatabase('http://localhost:8888/api/book/catalog/1?page=all')
+// saveDatabase()

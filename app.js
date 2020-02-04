@@ -40,10 +40,12 @@ app.use(upload.any());
 let cors = serverConfig.cors;
 // 无权限认证的api
 let authApiList = [
+  '/api/book/auth',
   '/api/book/manage/login',
   '/api/book/list/base',
   '/api/book/wx/login',
-  '/api/book/wx/getOpenid'
+  '/api/book/wx/getOpenid',
+  '/api/book/upload/img'
 ];
 app.all("*", (req, res, next) => {
   // console.log(req.headers.origin)
@@ -102,7 +104,7 @@ app.use("/api/book/", fictionRouter);
 app.use(express.static(path.join(__dirname, "public")));
 
 // 小说爬虫
-// require('./utils/book-reptile');
+require('./utils/book-reptile');
 
 // app.get('/', async function(req, res, next) {
 // 	res.send('success');

@@ -10,6 +10,7 @@ const serverConfig = require('../../config');
 //引入数据模型模块
 const model = require("./model");
 const Catalog = model.Catalog;
+const Catalog2 = model.Catalog2;
 const SectionContent = model.SectionContent;
 const Book = model.Book;
 const Classify = model.Classify;
@@ -28,6 +29,11 @@ const ManageUser = model.ManageUser;
 // 991: 服务器session失效
 // 990: 退出登录失败
 // 889: 当前书籍已经加入书架
+
+// 数据同步
+// 10001: 本地爬虫数据库中不存在该书籍信息
+
+// 鉴权
 // 1: 鉴权失败
 // 0：正常访问(按预期流程进行)
 
@@ -65,29 +71,45 @@ router.get('/list/base', function (req, res, next) {
 			})
 		})
 	})
-})
+});
 
 // 获取指定分类小说列表
 router.get('/list/:classifyId', function (req, res, next) {
 	let {
 		classifyId
 	} = req.params;
-	Book.find({
-		classify: classifyId
-	}, function (err, bookList) {
-		if (err) {
-			return res.send({
-				errcode: 999,
-				message: '查询数据库失败!'
+	if (classifyId === 'all') {
+		Book.find({}, function (err, bookList) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '查询数据库失败!'
+				});
+			}
+			res.send({
+				errcode: 0,
+				message: '获取小说列表成功!',
+				bookList
 			});
-		}
-		res.send({
-			errcode: 0,
-			message: '获取小说列表成功!',
-			bookList
 		});
-	})
-})
+	} else {
+		Book.find({
+			classify: classifyId
+		}, function (err, bookList) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '查询数据库失败!'
+				});
+			}
+			res.send({
+				errcode: 0,
+				message: '获取小说列表成功!',
+				bookList
+			});
+		});
+	}
+});
 
 // 获取管理端用户列表
 // router.get('/manage/list', function (req, res, next) {
@@ -149,7 +171,7 @@ router.post('/manage/login', function (req, res, next) {
 			});
 		}
 	})
-})
+});
 
 // 小说管理员注销
 router.get('/manage/logout', function (req, res, next) {
@@ -172,7 +194,7 @@ router.get('/manage/logout', function (req, res, next) {
 			message: '退出登录成功!'
 		});
 	}
-})
+});
 
 // 小程序-通过openid维护登录态
 router.post('/wx/getOpenid', function (req, res, next) {
@@ -350,7 +372,7 @@ router.post('/wx/logon', function (req, res, next) {
 			});
 		})
 	}
-})
+});
 
 // 获取书架信息
 router.get('/bookrackInfo', function (req, res, next) {
@@ -391,7 +413,7 @@ router.get('/bookrackInfo', function (req, res, next) {
 			});
 		})
 	});
-})
+});
 
 // 获取小说目录 query => page: 页数 limit: 每次获取的数量
 router.get('/catalog/:bookId', function (req, res, next) {
@@ -461,18 +483,10 @@ router.get('/catalog/:bookId', function (req, res, next) {
 			});
 		}
 	})
-})
+});
 
 // 获取小说章节内容
 router.get('/content/:bookId/:sectionId', function (req, res, next) {
-	// let { client } = req.session;
-	// if (!client) {
-	// 	return res.send({
-	// 		errcode: '991',
-	// 		message: '用户登录态失效!'
-	// 	})
-	// }
-
 	SectionContent.find({
 		bookId: req.params.bookId,
 		sectionId: req.params.sectionId
@@ -496,7 +510,7 @@ router.get('/content/:bookId/:sectionId', function (req, res, next) {
 			});
 		}
 	})
-})
+});
 
 // 返回图片
 // router.get('/public/uploads/images/*', function (req, res) {
@@ -506,14 +520,16 @@ router.get('/content/:bookId/:sectionId', function (req, res, next) {
 // })
 
 // 上传书籍封面
-router.post('/uploadfile/bookCover', function (req, res, next) {
-	// console.log(req.files[0])
-	console.log(req.body)
-	console.log(__dirname)
+router.post('/upload/img', function (req, res, next) {
+	console.log('上传图片')
+	// console.log(req.body)
+	// console.log(__dirname)
 	let {
 		oldFilePath
 	} = req.body;
+	// console.log(req.files[0])
 	let mimetype = req.files[0].mimetype.split('/')[1];
+	let systemType = os.type();
 	let filename = `${Date.now()}${parseInt((Math.random() + 1) * 10000)}.${mimetype}`;
 	let filePath = serverConfig.model === 'production' ? `/home/public/uploads/images/bookcover/${filename}` : `‎/Users/george/Desktop/uploads/images/${filename}`;
 	// console.log(filePath)
@@ -524,44 +540,69 @@ router.post('/uploadfile/bookCover', function (req, res, next) {
 				message: '上传失败!'
 			})
 		} else {
-			fs.writeFile(filePath, data, function (err) {
-				if (err) {
-					// console.log(`写入文件失败:${filePath}`)
-					// console.log(err)
-					return res.send({
-						errcode: 996,
-						message: '上传失败!'
-					})
-				}
-				// 删除元文件
-				fs.unlink(req.files[0].path, (err) => {
+			if (serverConfig.model === 'production' && systemType !== 'Darwin') {
+				fs.writeFile(filePath, data, function (err) {
 					if (err) {
-						console.log('删除文件失败1');
-						console.log(err)
+						// console.log(`写入文件失败:${filePath}`)
+						// console.log(err)
+						return res.send({
+							errcode: 996,
+							message: '上传失败!'
+						})
 					}
-				});
-				// 删除之前上传的图片（重新上传）
-
-				if (oldFilePath) {
-					oldFilePath = oldFilePath.split('/file/')[1]
-					let oldFile = serverConfig.model === 'development' ? `/Users/george/Desktop/uploads/images/${oldFilePath}` : oldFilePath
-					fs.unlink(oldFile, (err) => {
+					// 删除元文件
+					fs.unlink(req.files[0].path, (err) => {
 						if (err) {
-							console.log('删除文件失败2');
+							console.log('删除文件失败1');
 							console.log(err)
 						}
 					});
-				}
-				res.send({
-					errcode: 0,
-					message: '上传成功!',
-					// filePath: `http://${serverConfig.host}:${serverConfig.port}/api/book/public/uploads/images/${filename}`
-					filePath: `http://${serverConfig.host}/file/uploads/images/bookcover/${filename}`
-				})
-			})
+					// 删除之前上传的图片（重新上传）
+					// if (oldFilePath) {
+					// 	oldFilePath = oldFilePath.split('/file/')[1]
+					// 	let oldFile = serverConfig.model === 'development' ? `/Users/george/Desktop/uploads/images/${oldFilePath}` : oldFilePath
+					// 	fs.unlink(oldFile, (err) => {
+					// 		if (err) {
+					// 			console.log('删除文件失败2');
+					// 			console.log(err)
+					// 		}
+					// 	});
+					// }
+					res.send({
+						errcode: 0,
+						message: '上传成功!',
+						// filePath: `http://${serverConfig.host}:${serverConfig.port}/api/book/public/uploads/images/${filename}`
+						filePath: `http://${serverConfig.host}/file/uploads/images/bookcover/${filename}`
+					})
+				});
+			} else {
+				fs.writeFile(`/Users/george/Desktop/uploads/images/bookcover/${filename}`, data, function(err) {
+					if (err) {
+						console.log(err)
+						return res.send({
+							errcode: 996,
+							message: '上传失败!'
+						});
+					}
+					// 删除元文件
+					fs.unlink(req.files[0].path, (err) => {
+						if (err) {
+							console.log('删除原文件失败!');
+							console.log(err)
+						}
+					});
+					// 删除之前上传的图片(重新上传)
+					res.send({
+						errcode: 0,
+						message: '上传成功!',
+						// filePath: `http://${serverConfig.host}:${serverConfig.port}/api/book/public/uploads/images/${filename}`
+						filePath: `http://${serverConfig.host}/file/images/bookcover/${filename}`
+					});
+				});
+			}
 		}
-	})
-})
+	});
+});
 
 // 新增小说
 router.post('/registerBook', function (req, res, next) {
@@ -686,7 +727,7 @@ router.delete('/delete/:bookId', function (req, res, next) {
 	})
 })
 
-// 获取分类
+// 获取分类列表
 router.get('/classifyList', function (req, res, next) {
 	Classify.find({}, function (err, classifyList) {
 		if (err) {
@@ -719,7 +760,29 @@ router.get('/classifyList', function (req, res, next) {
 			})
 		})
 	})
-})
+});
+
+// 根据id获取分类信息
+router.get('/classify/:_id', function (req, res, next) {
+	let {
+		_id
+	} = req.params;
+	Classify.findOne({
+		_id
+	}, function (err, classify) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '获取分类失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '获取分类信息成功!',
+			classify
+		});
+	});
+});
 
 // 新增分类
 router.post('/registerClassify', function (req, res, next) {
@@ -741,7 +804,7 @@ router.post('/registerClassify', function (req, res, next) {
 			message: '新增分类成功!'
 		});
 	})
-})
+});
 
 // 更新分类
 router.put('/updateClassify', function (req, res, next) {
@@ -766,7 +829,7 @@ router.put('/updateClassify', function (req, res, next) {
 		errcode: 0,
 		message: '更新分类成功!'
 	})
-})
+});
 
 // 获取用户列表
 router.get('/getUserList', function (req, res, next) {
@@ -920,7 +983,7 @@ router.post('/joinBookrack', function (req, res, next) {
 			message: '服务器登录态失效!'
 		})
 	}
-})
+});
 
 // 移出书架
 router.post('/removeBookrack', function (req, res, next) {
@@ -980,6 +1043,74 @@ router.post('/removeBookrack', function (req, res, next) {
 			}
 		})
 	})
-})
+});
+
+// 本地数据同步
+router.get('/sync/local/:bookId', function (req, res, next) {
+	let {
+		bookId
+	} = req.params;
+	Catalog2.find({
+		bookId
+	}, function(err, sectionList) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '查询数据库失败!'
+			});
+		}
+		if (sectionList && sectionList.length) {
+			sectionList = JSON.parse(JSON.stringify(sectionList));
+			sectionList.forEach(item => {
+				delete item._id
+				delete item.__v
+			})
+			// console.log(sectionList)
+			// Catalog.insertMany(sectionList, function(err, ) {})
+			// sectionList.forEach(item => {
+			// 	let catalog = new Catalog({
+			// 		bookId: item.bookId,
+			// 		bookName: item.bookName,
+			// 		author: item.author,
+			// 		title: item.title,
+			// 		url: item.url,
+			// 		sectionId: item.sectionId
+			// 	});
+			// 	catalog.save(function(err, data) {
+			// 		if (err) return console.log(err);
+			// 	});
+			// })
+			return res.send({
+				errcode: 0,
+				message: '本地爬虫数据同步至数据库成功!'
+			});
+		} else {
+			return res.send({
+				errcode: 10001,
+				message: '本地爬虫数据库中不存在该书籍信息!'
+			});
+		}
+	})
+});
+
+// 获取书籍信息by id
+router.get('/info/:bookId', function (req, res, next) {
+	let {
+		bookId
+	} = req.params;
+	Book.findOne({ _id: bookId }, function (err, book) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '获取书籍信息成功!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '获取书籍信息成功!',
+			bookInfo: book
+		});
+	});
+});
 
 module.exports = router;
