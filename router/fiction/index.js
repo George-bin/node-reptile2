@@ -9,13 +9,16 @@ const router = express.Router();
 const serverConfig = require('../../config');
 //引入数据模型模块
 const model = require("./model");
-const Catalog = model.Catalog;
-const Catalog2 = model.Catalog2;
-const SectionContent = model.SectionContent;
-const Book = model.Book;
-const Classify = model.Classify;
-const User = model.User;
-const ManageUser = model.ManageUser;
+const {
+	Catalog,
+	Catalog2,
+	SectionContent,
+	Book,
+	Classify,
+	Label,
+	User,
+	ManageUser
+} = model;
 
 // 状态码（errcode）
 // 999：操作数据库失败
@@ -29,6 +32,7 @@ const ManageUser = model.ManageUser;
 // 991: 服务器session失效
 // 990: 退出登录失败
 // 889: 当前书籍已经加入书架
+// 888: 存在相同数据
 
 // 数据同步
 // 10001: 本地爬虫数据库中不存在该书籍信息
@@ -73,7 +77,7 @@ router.get('/list/base', function (req, res, next) {
 	})
 });
 
-// 获取指定分类小说列表
+// 根据分类id获取小说列表
 router.get('/list/:classifyId', function (req, res, next) {
 	let {
 		classifyId
@@ -728,12 +732,12 @@ router.delete('/delete/:bookId', function (req, res, next) {
 })
 
 // 获取分类列表
-router.get('/classifyList', function (req, res, next) {
+router.get('/classify', function (req, res, next) {
 	Classify.find({}, function (err, classifyList) {
 		if (err) {
 			return res.send({
 				errcode: 999,
-				message: '获取分类失败!'
+				message: '操作数据库失败!'
 			});
 		}
 		classifyList = JSON.parse(JSON.stringify(classifyList))
@@ -747,11 +751,11 @@ router.get('/classifyList', function (req, res, next) {
 			classifyList.forEach(classify => {
 				let count = 0;
 				bookList.forEach(book => {
-					if (classify.classifyId === book.classify) {
+					if (classify.id === book.classify) {
 						count += 1
 					}
 				})
-				classify.classifyBookCount = count;
+				classify.bookCount = count;
 			})
 			res.send({
 				errcode: 0,
@@ -776,46 +780,82 @@ router.get('/classify/:_id', function (req, res, next) {
 				message: '获取分类失败!'
 			});
 		}
-		res.send({
-			errcode: 0,
-			message: '获取分类信息成功!',
-			classify
-		});
+		Book.find({
+			classify: classify.classifyId
+		}, function (err, books) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '获取分类失败!'
+				});
+			}
+			classify = JSON.parse(JSON.stringify(classify))
+			res.send({
+				errcode: 0,
+				message: '获取分类信息成功!',
+				classify: {
+					...classify,
+					bookCount: books.length
+				}
+			});
+		})
 	});
 });
 
 // 新增分类
-router.post('/registerClassify', function (req, res, next) {
+router.post('/classify', function (req, res, next) {
 	let {
 		body
 	} = req;
-	let classify = new Classify({
-		...body
-	})
-	classify.save((err, classify) => {
+	body = JSON.parse(JSON.stringify(body));
+	body.id = Date.now().toString();
+	let { name } = body
+	Classify.find({
+		name
+	}, function (err, classifyList) {
 		if (err) {
 			return res.send({
 				errcode: 999,
-				message: '写入数据库失败!'
+				message: '查询数据库失败!'
 			});
 		}
-		res.send({
-			errcode: 0,
-			message: '新增分类成功!'
-		});
-	})
+		if (classifyList.length > 0) {
+			return res.send({
+				errcode: 888,
+				message: '该分类已存在，请勿重复添加!'
+			});
+		} else {
+			let classify = new Classify({
+				...body,
+				createTime: new Date(),
+				updateTime: new Date()
+			})
+			classify.save((err, classify) => {
+				if (err) {
+					return res.send({
+						errcode: 999,
+						message: '写入数据库失败!'
+					});
+				}
+				res.send({
+					errcode: 0,
+					message: '新增分类成功!'
+				});
+			});
+		}
+	});
 });
 
 // 更新分类
-router.put('/updateClassify', function (req, res, next) {
+router.put('/classify', function (req, res, next) {
 	let {
 		body
 	} = req
 	Classify.update({
 		_id: body._id
 	}, {
-		classifyId: body.classifyId,
-		classifyName: body.classifyName
+		updateTime: new Date(),
+		name: body.name
 	}, function (err, res) {
 		if (err) {
 			return res.send({
@@ -829,6 +869,132 @@ router.put('/updateClassify', function (req, res, next) {
 		errcode: 0,
 		message: '更新分类成功!'
 	})
+});
+
+// 删除分类
+router.delete('/classify/:_id', function (req, res, next) {
+	let { _id } = req.params;
+	Classify.deleteOne({
+		_id
+	}, function (err, classify) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '从数据库删除分类失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '删除分类成功!',
+			classify
+		});
+	});
+});
+
+// 获取标签
+router.get('/label', function (req, res, next) {
+	Label.find({}, function (err, labelList) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '操作数据库失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '获取标签列表成功!',
+			labelList
+		});
+	});
+});
+
+// 获取标签详细信息
+router.get('/label/:_id', function (req, res, next) {
+	let { _id } = req.params;
+	Label.findOne({_id}, function (err, label) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '操作数据库失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '获取标签信息成功!',
+			label
+		});
+	});
+});
+
+// 新增标签
+router.post('/label', function (req, res, next) {
+	let {
+		body
+	} = req;
+	body = JSON.parse(JSON.stringify(body));
+	body.id = Date.now().toString() + parseInt(Math.random()*10000);
+	let label = new Label({
+		...body,
+		createTime: new Date(),
+		updateTime: new Date()
+	})
+	label.save((err, label) => {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '写入数据库失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '新增标签成功!',
+			label
+		});
+	});
+});
+
+// 删除标签
+router.delete('/label/:_id', function (req, res, next) {
+	let { _id } = req.params;
+	Label.deleteOne({
+		_id
+	}, function (err, label) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '从数据库删除标签失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '删除标签成功!',
+			label
+		})
+	})
+});
+
+// 更新标签信息
+router.put('/label/:_id', function (req, res, next) {
+	let { _id } = req.params;
+	let {
+		body
+	} = req;
+	Label.update({_id}, {
+		name: body.name,
+		updateTime: new Date()
+	}, function (err, label) {
+		if (err) {
+			return res.send({
+				errcode: 999,
+				message: '操作数据库失败!'
+			});
+		}
+		res.send({
+			errcode: 0,
+			message: '更新标签成功!',
+			label
+		});
+	});
 });
 
 // 获取用户列表
@@ -846,7 +1012,7 @@ router.get('/getUserList', function (req, res, next) {
 			userList
 		})
 	})
-})
+});
 
 // 新增用户
 router.post('/registerUser', function (req, res, next) {

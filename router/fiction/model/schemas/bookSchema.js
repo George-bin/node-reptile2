@@ -11,7 +11,9 @@ const bookSchema = new mongoose.Schema({
 	popularityIndex: Number, // 人气指数
 	grade: Number, // 评分
 	like: Number, // 点赞
-	label: String // 标签
+	label: Array, // 标签
+	createTime: Date, // 创建时间
+	updateTime: Date // 更新时间
 }, {
 	collection: 'book_list'
 })
