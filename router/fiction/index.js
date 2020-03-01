@@ -654,8 +654,8 @@ router.post('/registerBook', function (req, res, next) {
 	})
 })
 
-// 更新小说基本信息
-router.put('/updateBookInfo', function (req, res, next) {
+// 更新小说信息
+router.put('/', function (req, res, next) {
 	console.log('更新')
 	console.log(req.body)
 	let {
@@ -674,7 +674,7 @@ router.put('/updateBookInfo', function (req, res, next) {
 		popularityIndex: body.popularityIndex, // 人气指数
 		grade: body.grade, // 评分
 		like: body.like, // 点赞
-		label: JSON.stringify(body.label) // 标签
+		label: body.label // 标签
 	}, {}, (err, doc) => {
 		if (err) {
 			return res.send({
@@ -729,7 +729,93 @@ router.delete('/delete/:bookId', function (req, res, next) {
 			})
 		})
 	})
-})
+});
+
+// 条件筛选（分页处理）
+router.get('/screen', function (req, res, next) {
+	console.log(req.query)
+	let {
+		page,
+		count,
+		classifyId,
+		labelId
+	} = req.query;
+	page = Number(page)-1
+	count = Number(count)
+	if (classifyId === 'all') {
+		Book.find({}, function (err, bookList) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '查询book数据库失败!'
+				});
+			}
+			if (labelId === 'all') {
+				res.send({
+					errcode: 0,
+					message: '获取小说列表成功!',
+					page,
+					count,
+					counts: bookList.length,
+					bookList: bookList.slice(page*count, page*count+count)
+				});
+			} else {
+				let result = []
+				bookList.forEach(item => {
+					let index = item.label.findIndex(item => item === labelId)
+					if (index > -1) {
+						result.push(JSON.parse(JSON.stringify(item)))
+					}
+				});
+				res.send({
+					errcode: 0,
+					message: '获取小说列表成功!',
+					page,
+					count,
+					counts: result.length,
+					bookList: result.slice(page*count, page*count+count)
+				});
+			}
+		});
+	} else {
+		Book.find({
+			classify: classifyId
+		}, function (err, bookList) {
+			if (err) {
+				return res.send({
+					errcode: 999,
+					message: '查询book数据库失败!'
+				});
+			}
+			if (labelId === 'all') {
+				res.send({
+					errcode: 0,
+					message: '获取小说列表成功!',
+					page,
+					count,
+					counts: bookList.length,
+					bookList: bookList.slice(page*count, page*count+count)
+				});
+			} else {
+				let result = []
+				bookList.forEach(item => {
+					let index = item.label.findIndex(item => item === labelId)
+					if (index > -1) {
+						result.push(JSON.parse(JSON.stringify(item)))
+					}
+				});
+				res.send({
+					errcode: 0,
+					message: '获取小说列表成功!',
+					page,
+					count,
+					counts: result.length,
+					bookList: result.slice(page*count, page*count+count)
+				});
+			}
+		});
+	}
+});
 
 // 获取分类列表
 router.get('/classify', function (req, res, next) {
