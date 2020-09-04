@@ -7,8 +7,7 @@ const session = require("express-session");
 const serverConfig = require("./config");
 const multer = require("multer");
 const storage = multer.diskStorage({
-  // destination: 'D:\\public\\uploads\\'+ new Date().getFullYear() + (new Date().getMonth()+1) + new Date().getDate()
-  destination: serverConfig.model === "production" ? "/public/uploads/" : '/Users/george/Desktop/uploads'
+  destination: serverConfig.upload_path
 });
 // 设置保存上传文件路径
 const upload = multer({
@@ -20,7 +19,7 @@ const app = express();
 app.use(
   session({
     // cookie的名字（也可以设为key）
-    name: "session_id",
+    name: "usr",
     // 私钥（用于对sessionID的cookie进行签名）
     secret: "{sb}{123}?az+q",
     cookie: {
@@ -33,13 +32,19 @@ app.use(
     saveUninitialized: false
   })
 );
-
+// 每次请求，刷新session的过期时间
+app.use(function(req, res, next) {
+  req.session._garbage = Date();
+  req.session.touch();
+  next();
+});
 app.use(bodyParser.json());
+// 上传文件
 app.use(upload.any());
 
-let cors = serverConfig.cors;
 // 无权限认证的api
 let authApiList = [
+  '/api/book/list/base',
   '/api/book/auth',
   '/api/book/manage/login',
   '/api/book/list/base',
@@ -49,7 +54,6 @@ let authApiList = [
 ];
 app.all("*", (req, res, next) => {
   // console.log(req.headers.origin)
-  // let ol = cors.split(',')
   // if (ol.includes(req.headers.origin) >= 0) {
   // 	res.header("Access-Control-Allow-Origin", req.headers.origin);
   // 	res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
@@ -63,11 +67,13 @@ app.all("*", (req, res, next) => {
   // res.header("Access-Control-Allow-Headers","Content-Type");
   // res.header("Content-Type", "application/json;charset=utf-8");
   // res.header("Access-Control-Allow-Credentials", true);
-  // console.log(req.session);
+  console.log(req.session);
   if (authApiList.indexOf(req.url) > -1) {
     next();
   } else {
     let { client } = req.session;
+    console.log(req.url)
+    console.log(req.session)
     if (client && client.isAuth) {
       next();
     } else {
@@ -81,9 +87,8 @@ app.all("*", (req, res, next) => {
 
 // 数据库 start
 const mongoose = require("mongoose");
-// 连接数据库（vueData为数据库的名字）
-let dbAddress = serverConfig.model === "production" ? "mongodb://gsb:binbinhaoshuai10@localhost:27017/book_data_base" : "mongodb://localhost:27017/book_data_base";
-mongoose.connect(dbAddress, {
+// 连接数据库
+mongoose.connect(serverConfig.db_url, {
   useNewUrlParser: true
 });
 // connect()返回一个状态待定（pending）的接连，接着加上成功提醒和失败警告；
@@ -97,14 +102,14 @@ mongoose.connection.on("disconnected", function () {
 // 数据库 end
 
 // 路由
-const fictionRouter = require("./router/fiction");
-// 小说路由
-app.use("/api/book/", fictionRouter);
+const manage = require("./router/manage");
+// 管理端
+app.use("/api/book/", manage);
 
 app.use(express.static(path.join(__dirname, "public")));
 
 // 小说爬虫
-require('./utils/book-reptile');
+// require('./utils/book-reptile');
 
 // app.get('/', async function(req, res, next) {
 // 	res.send('success');

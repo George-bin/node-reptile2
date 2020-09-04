@@ -16,16 +16,15 @@ const model = require("../router/fiction/model");
 const Catalog2 = model.Catalog2;
 const SectionContent2 = model.SectionContent2;
 
-let url = "https://www.qb5.tw/shu/414.html";
+let url = "https://www.qb5.tw/book_518/";
 // getCatalog({
 // 	url,
-// 	bookId: 2,
-// 	bookName: '神藏',
-// 	author: '打眼'
+// 	bookId: 8,
+// 	bookName: '斗罗大陆',
+// 	author: '唐家三少'
 // });
 // 获取小说目录
 let catalog = [];
-
 function getCatalog({ url, bookId, bookName, author }) {
   https
     .get(url, function(res) {
@@ -59,14 +58,14 @@ function getCatalog({ url, bookId, bookName, author }) {
         // });
 
         // 全本小说
-        $('.zjlist dd:nth-child(n+4) a').each((idx, ele) => {
+        $('.zjlist dd:nth-child(n+15) a').each((idx, ele) => {
         	console.log($(ele).text())
         	let catalog = new Catalog2({
         		bookId: bookId,
         		bookName: bookName,
         		author: author,
         		title: $(ele).text(),
-        		url: 'https://www.qb5.tw'+$(ele).attr('href'),
+        		url: 'https://www.qb5.tw/book_518/'+$(ele).attr('href'),
         		sectionId: idx.toString().padStart(6, '0')
         	});
         	catalog.save(function(err, data) {
