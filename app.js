@@ -67,38 +67,40 @@ app.all("*", (req, res, next) => {
   // res.header("Access-Control-Allow-Headers","Content-Type");
   // res.header("Content-Type", "application/json;charset=utf-8");
   // res.header("Access-Control-Allow-Credentials", true);
-  console.log(req.session);
-  if (authApiList.indexOf(req.url) > -1) {
-    next();
-  } else {
-    let { client } = req.session;
-    console.log(req.url)
-    console.log(req.session)
-    if (client && client.isAuth) {
-      next();
-    } else {
-      res.send({
-        errcode: 991,
-        message: '登录态失效!'
-      });
-    }
-  }
+
+  next();
+  // console.log(req.session);
+  // if (authApiList.indexOf(req.url) > -1) {
+  //   next();
+  // } else {
+  //   let { client } = req.session;
+  //   console.log(req.url)
+  //   console.log(req.session)
+  //   if (client && client.isAuth) {
+  //     next();
+  //   } else {
+  //     res.send({
+  //       errcode: 991,
+  //       message: '登录态失效!'
+  //     });
+  //   }
+  // }
 });
 
 // 数据库 start
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
 // 连接数据库
-mongoose.connect(serverConfig.db_url, {
-  useNewUrlParser: true
-});
+// mongoose.connect(serverConfig.db_url, {
+//   useNewUrlParser: true
+// });
 // connect()返回一个状态待定（pending）的接连，接着加上成功提醒和失败警告；
-mongoose.connection.on("error", console.error.bind(console, "数据库连接失败!"));
-mongoose.connection.once("open", function () {
-  console.log("数据库连接成功!");
-});
-mongoose.connection.on("disconnected", function () {
-  console.log("数据库断开!");
-});
+// mongoose.connection.on("error", console.error.bind(console, "数据库连接失败!"));
+// mongoose.connection.once("open", function () {
+//   console.log("数据库连接成功!");
+// });
+// mongoose.connection.on("disconnected", function () {
+//   console.log("数据库断开!");
+// });
 // 数据库 end
 
 // 路由
