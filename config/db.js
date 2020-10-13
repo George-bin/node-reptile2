@@ -1,4 +1,4 @@
-var mysql = require("mysql")
+const mysql = require("mysql");
 
 
 /**
@@ -15,8 +15,8 @@ var pool = mysql.createPool({
 
 /**
  * 非事务执行
- * @param {*} sql 
- * @param {*} callback 
+ * @param {*} sql
+ * @param {*} callback
  */
 const query = async function (sql) {
     return new Promise((resolve, reject) => {
@@ -56,7 +56,7 @@ const getConnection = async function () {
 class DBUnity {
     /**
      * 开启数据库连接
-     * @param {*} connection 
+     * @param {*} connection
      */
     constructor(connection) {
         this.blTransaction = false;
@@ -81,7 +81,7 @@ class DBUnity {
 
         /**
          * 执行sql
-         * @param {*} sql 
+         * @param {*} sql
          */
         this.query = async (sql) => {
             return new Promise((resolve, reject) => {
@@ -129,7 +129,7 @@ class DBResult{
     /**
    * 数据层结果返回
    * @param {number} code 返回状态码 0:操作失败,1:操作成功
-   * @param {boolean} success 
+   * @param {boolean} success
    * @param {string} message 返回信息
    * @param {object} data 返回数据对象
    */

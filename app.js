@@ -103,10 +103,12 @@ app.all("*", (req, res, next) => {
 // });
 // 数据库 end
 
-// 路由
-const manage = require("./router/manage");
-// 管理端
-app.use("/api/book/", manage);
+// 管理端（路由）
+// const manage = require("./router/manage");
+// app.use("/api/book/", manage);
+
+const mysql = require('./router/mysql');
+app.use("/api/book/", mysql);
 
 app.use(express.static(path.join(__dirname, "public")));
 

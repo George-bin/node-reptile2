@@ -2,17 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="62d2916e-b464-4cf0-ae18-da8a03034055" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/router/mysql/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/router/mysql/user.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/manage/book.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/manage/book.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/db.js" beforeDir="false" afterPath="$PROJECT_DIR$/config/db.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/router/manage/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/manage/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/manage/model/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/manage/model/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/manage/model/schemas/bookSchema.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/manage/model/schemas/bookSchema.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/manage/model/schemas/catalogSchema.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/manage/model/schemas/catalogSchema.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/manage/model/schemas/catalogSchema2.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/manage/model/schemas/labelSchema.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/manage/model/schemas/labelSchema.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/manage/model/schemas/sectionContentSchema.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/manage/model/schemas/sectionContentSchema.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/router/manage/model/schemas/sectionContentSchema2.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/router/manage/reptile.js" beforeDir="false" afterPath="$PROJECT_DIR$/router/mysql/reptile.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,6 +42,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1h3BxC9IJSHKrGdxwe8RX7lpR00" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="添加" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -58,6 +57,11 @@
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/router/mysql" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration name="start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
@@ -139,6 +143,7 @@
       <workItem from="1569137794595" duration="15000" />
       <workItem from="1599230141696" duration="2530000" />
       <workItem from="1599268814797" duration="62000" />
+      <workItem from="1602596050764" duration="4071000" />
     </task>
     <servers />
   </component>
@@ -146,21 +151,25 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
-    <state width="1419" height="285" key="GridCell.Tab.0.bottom" timestamp="1599235279344">
-      <screen x="0" y="23" width="1440" height="877" />
+    <state width="1419" height="320" key="GridCell.Tab.0.bottom" timestamp="1602601668118">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
+    <state width="1419" height="320" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1602601668118" />
     <state width="1419" height="285" key="GridCell.Tab.0.bottom/0.23.1440.877@0.23.1440.877" timestamp="1599235279344" />
-    <state width="1419" height="285" key="GridCell.Tab.0.center" timestamp="1599235279343">
-      <screen x="0" y="23" width="1440" height="877" />
+    <state width="1419" height="320" key="GridCell.Tab.0.center" timestamp="1602601668117">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
+    <state width="1419" height="320" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1602601668117" />
     <state width="1419" height="285" key="GridCell.Tab.0.center/0.23.1440.877@0.23.1440.877" timestamp="1599235279343" />
-    <state width="1419" height="285" key="GridCell.Tab.0.left" timestamp="1599235279342">
-      <screen x="0" y="23" width="1440" height="877" />
+    <state width="1419" height="320" key="GridCell.Tab.0.left" timestamp="1602601668117">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
+    <state width="1419" height="320" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1602601668117" />
     <state width="1419" height="285" key="GridCell.Tab.0.left/0.23.1440.877@0.23.1440.877" timestamp="1599235279342" />
-    <state width="1419" height="285" key="GridCell.Tab.0.right" timestamp="1599235279343">
-      <screen x="0" y="23" width="1440" height="877" />
+    <state width="1419" height="320" key="GridCell.Tab.0.right" timestamp="1602601668117">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
+    <state width="1419" height="320" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1602601668117" />
     <state width="1419" height="285" key="GridCell.Tab.0.right/0.23.1440.877@0.23.1440.877" timestamp="1599235279343" />
     <state width="1419" height="285" key="GridCell.Tab.1.bottom" timestamp="1599235279346">
       <screen x="0" y="23" width="1440" height="877" />
