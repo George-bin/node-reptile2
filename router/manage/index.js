@@ -70,34 +70,41 @@ router.get('/auth', function(req, res, next) {
 // 小说管理员登录
 router.post('/manage/login', function (req, res, next) {
 	let {
-		body
-	} = req;
-	// console.log('请求信息')
-	// console.log(body)
+		account,
+		password
+	} = req.body;
+	console.log('请求信息')
 	ManageUser.findOne({
-		account: body.account,
-		password: body.password
+		account
 	}, function (err, user) {
+		// password: body.password
 		console.log(user)
 		if (err) {
 			return res.send({
 				errcode: 999,
 				message: '查询数据库失败!'
-			})
+			});
 		}
 		if (user) {
-			req.session.client = {
-				isAuth: true,
-				account: body.account
+			if (password === user.password) {
+				req.session.client = {
+					isAuth: true,
+					account
+				};
+				return res.send({
+					errcode: 0,
+					message: '登录成功!'
+				});
+			} else {
+				return res.send({
+					errcode: 992,
+					message: '密码错误!'
+				});
 			}
-			return res.send({
-				errcode: 0,
-				message: '登录成功!'
-			});
 		} else {
 			res.send({
-				errcode: 994,
-				message: '登录失败!'
+				errcode: 993,
+				message: '用户不存在!'
 			});
 		}
 	})

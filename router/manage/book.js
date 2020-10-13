@@ -1,4 +1,7 @@
+const fs = require("fs");
 const router = require("./index.js");
+const serverConfig = require("../../config");
+
 //引入数据模型模块
 const model = require("./model");
 const {
@@ -84,9 +87,7 @@ router.get('/list/:classifyId', function (req, res, next) {
 
 // 上传书籍封面
 router.post('/upload/img', function (req, res, next) {
-	console.log('上传图片')
-	// console.log(req.body)
-	// console.log(__dirname)
+	// console.log('上传图片')
 	let {
 		oldFilePath
 	} = req.body;
@@ -135,30 +136,6 @@ router.post('/upload/img', function (req, res, next) {
 					filePath: `http://${serverConfig.host}/file/uploads/images/bookcover/${filename}`
 				})
 			});
-			// mac环境
-			// fs.writeFile(`/Users/george/Desktop/uploads/images/bookcover/${filename}`, data, function(err) {
-			// 	if (err) {
-			// 		console.log(err)
-			// 		return res.send({
-			// 			errcode: 996,
-			// 			message: '上传失败!'
-			// 		});
-			// 	}
-			// 	// 删除元文件
-			// 	fs.unlink(req.files[0].path, (err) => {
-			// 		if (err) {
-			// 			console.log('删除原文件失败!');
-			// 			console.log(err)
-			// 		}
-			// 	});
-			// 	// 删除之前上传的图片(重新上传)
-			// 	res.send({
-			// 		errcode: 0,
-			// 		message: '上传成功!',
-			// 		// filePath: `http://${serverConfig.host}:${serverConfig.port}/api/book/public/uploads/images/${filename}`
-			// 		filePath: `http://${serverConfig.host}/file/images/bookcover/${filename}`
-			// 	});
-			// });
 		}
 	});
 });
@@ -324,7 +301,7 @@ router.get('/screen', function (req, res, next) {
             page,
             count,
             bookList: result.slice(page*count, page*count+count)
-        });  
+        });
     })
 });
 

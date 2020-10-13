@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 const bookSchema = new mongoose.Schema({
 	classify: String, // 分类
-	bookId: Number, // 书id
 	bookName: String, // 书名
 	bookCover: String, // 图片
 	sectionCount: Number, // 章节数
