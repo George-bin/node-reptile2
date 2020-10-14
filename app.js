@@ -107,13 +107,11 @@ app.all("*", (req, res, next) => {
 // const manage = require("./router/manage");
 // app.use("/api/book/", manage);
 
-const mysql = require('./router/mysql');
-app.use("/api/book/", mysql);
-
 app.use(express.static(path.join(__dirname, "public")));
 
 // 小说爬虫
 // require('./utils/book-reptile');
+require('./utils/b_mysql_reptile');
 
 // app.get('/', async function(req, res, next) {
 // 	res.send('success');
